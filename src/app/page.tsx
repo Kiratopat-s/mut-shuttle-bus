@@ -22,9 +22,13 @@ export default function Home() {
       </div>
       {/* end upper */}
 
-      <div className="p-2 bg-red-900 rounded-xl w-full max-w-lg">
-        <CarouselCheckIn />
+      {/* body */}
+      <div className="flex flex-col h-full justify-start gap-4">
+        <div className="p-2 bg-red-900 rounded-xl w-full max-w-lg">
+          <CarouselCheckIn />
+        </div>
       </div>
+      {/* end body */}
 
       {/* footer */}
       <div className="flex flex-row py-2 justify-around w-full border-t border-gray-300">
