@@ -1,8 +1,7 @@
 import React from "react";
-import { ButtonWithIcon } from "../buttonWithLogo";
 import { ChevronLeft } from "lucide-react";
 import { Input } from "../ui/input";
-import Link from "next/link";
+import Discover from "../discover";
 
 interface SearchModalProps {
   isOpen?: boolean;
@@ -23,6 +22,7 @@ function SearchModal({ isOpen, close }: SearchModalProps) {
             </div>
             <Input className="" placeholder="Search a destination" />
           </div>
+          <Discover />
         </div>
       </div>
     )
