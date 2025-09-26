@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronLeft } from "lucide-react";
 import { Input } from "../ui/input";
 import Discover from "../discover";
+import RecentSearch from "../recentSearch";
 
 interface SearchModalProps {
   isOpen?: boolean;
@@ -23,6 +24,7 @@ function SearchModal({ isOpen, close }: SearchModalProps) {
             <Input className="" placeholder="Search a destination" />
           </div>
           <Discover />
+          <RecentSearch />
         </div>
       </div>
     )
