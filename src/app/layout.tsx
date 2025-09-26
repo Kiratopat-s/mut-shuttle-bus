@@ -12,7 +12,7 @@ const kanit = Kanit({
 });
 
 export const metadata: Metadata = {
-  title: "Shuttle Buss",
+  title: "MUT Shuttle Bus",
   description:
     "A simple shuttle bus booking application for Mahanakorn technology university.",
 };

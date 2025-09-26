@@ -3,18 +3,46 @@
 import { User, Search } from "lucide-react";
 import { ButtonWithIcon } from "./buttonWithLogo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useQueryState, parseAsBoolean } from "nuqs";
+import SearchModal from "./modal/searchModal";
 
-export function Upper() {
+// interface UpperProps {
+//   search: () => void;
+// }
+
+export function Upper(
+  {
+    //   search = () => {
+    //     alert("search");
+    //   },
+  }
+) {
+  const [searchModalOpen, setSearchModalOpen] = useQueryState(
+    "search",
+    parseAsBoolean.withDefault(false)
+  );
+
+  const handleOpenQrModal = () => {
+    setSearchModalOpen(true);
+  };
+
+  const handleCloseQrModal = () => {
+    setSearchModalOpen(false);
+  };
+
   return (
-    <div className="flex flex-row items-center justify-between w-full">
-      <div className="flex flex-row gap-2">
-        <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-          <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
-        <p>Hi {User.name}</p>
+    <>
+      <SearchModal isOpen={searchModalOpen} close={handleCloseQrModal} />
+      <div className="flex flex-row items-center justify-between w-full">
+        <div className="flex flex-row gap-2">
+          <Avatar>
+            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+          <p>Hi {User.name}</p>
+        </div>
+        <ButtonWithIcon onclick={handleOpenQrModal} icon={<Search />} />
       </div>
-      <ButtonWithIcon icon={<Search />} />
-    </div>
+    </>
   );
 }

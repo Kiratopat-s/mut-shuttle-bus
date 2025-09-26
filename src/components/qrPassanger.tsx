@@ -21,7 +21,7 @@ function QrPassanger({ isOpen = true, onClose }: QrPassangerProps) {
     <div
       className={`${
         isOpen ? "flex" : "hidden"
-      } w-screen h-screen bg-white items-center justify-center p-4 absolute top-0 left-0 z-[100]`}
+      } w-screen h-screen bg-red-900 items-center justify-center p-4 absolute top-0 left-0 z-[100]`}
     >
       <Card className="w-full max-w-sm">
         <CardHeader className="relative">

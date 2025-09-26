@@ -1,4 +1,4 @@
-import { Car, EllipsisVertical } from "lucide-react";
+import { Car } from "lucide-react";
 import React from "react";
 
 interface OriginToDestinationProps {
