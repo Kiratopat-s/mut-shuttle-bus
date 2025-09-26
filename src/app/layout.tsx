@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Kanit } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
+import Footer from "@/components/footer";
+import { Upper } from "@/components/upper";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const kanit = Kanit({
   variable: "--font-kanit",
@@ -9,7 +12,7 @@ const kanit = Kanit({
 });
 
 export const metadata: Metadata = {
-  title: "Shuttle Buss",
+  title: "MUT Shuttle Bus",
   description:
     "A simple shuttle bus booking application for Mahanakorn technology university.",
 };
@@ -24,7 +27,13 @@ export default function RootLayout({
       <body
         className={`${kanit.className} ${kanit.variable} ${kanit.style} antialiased`}
       >
-        {children}
+        <NuqsAdapter>
+          <div className="flex min-h-screen flex-col items-center justify-between p-4 gap-4">
+            <Upper />
+            {children}
+            <Footer />
+          </div>
+        </NuqsAdapter>
       </body>
     </html>
   );
