@@ -5,50 +5,81 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Car, EllipsisVertical, MonitorCog, QrCode } from "lucide-react";
+import { EllipsisVertical, MonitorCog, QrCode } from "lucide-react";
 import { ButtonWithIcon } from "./buttonWithLogo";
+import OriginToDestination from "./originToDestination";
 
-export function CarouselCheckIn() {
+const MockBookings = [
+  {
+    id: 1,
+    origin: "มหาวิทยลัยมหานคร",
+    destination: "โลตัสหนองจอก",
+    departTime: "08:00",
+    arriveTime: "09:00",
+    departDate: "Fri, 26 Sep 2025",
+    bookingNo: "21222423624825102612",
+    vehicleNo: "สย 2591 กทม",
+  },
+  {
+    id: 2,
+    origin: "โลตัสหนองจอก",
+    destination: "Big C หนองจอก",
+    departTime: "11:00",
+    arriveTime: "12:00",
+    departDate: "Fri, 26 Sep 2025",
+    bookingNo: "31222423624825102612",
+    vehicleNo: "บก 1130 กทม",
+  },
+  {
+    id: 3,
+    origin: "Big C หนองจอก",
+    destination: "มหาวิทยลัยมหานคร",
+    departTime: "14:00",
+    arriveTime: "15:30",
+    departDate: "Fri, 26 Sep 2025",
+    bookingNo: "41222423624825102612",
+    vehicleNo: "สย 2599 กทม",
+  },
+];
+
+interface CarouselCheckInProps {
+  onOpenQrModal?: () => void;
+}
+
+export function CarouselCheckIn({ onOpenQrModal }: CarouselCheckInProps) {
+  const handleOpenQrPassengerModal = () => {
+    onOpenQrModal?.();
+  };
+
   return (
-    <Carousel className="w-full">
+    <Carousel className="w-full max-w-sm">
       <CarouselContent>
-        {Array.from({ length: 5 }).map((_, index) => (
-          <CarouselItem key={index}>
+        {MockBookings.map((b) => (
+          <CarouselItem onClick={handleOpenQrPassengerModal} key={b.id}>
             <div className="p-2">
               <Card className="!p-0">
                 <CardContent className="flex items-center justify-center p-4">
                   <div className="flex flex-col gap-2 w-full">
                     <div className="flex justify-between w-full items-center">
-                      <p>Departs Fri, 26 Sep 2025</p>
+                      <p>Departs {b.departDate}</p>
                       <EllipsisVertical className=" scale-90 text-gray-500" />
                     </div>
-                    <div className="flex flex-row gap-4 items-center w-full justify-between">
-                      <div className="flex-col gap-1">
-                        <p>มหาวิทยลัยมหานคร</p>
-                        <p className="text-xs text-gray-500">08:00</p>
-                      </div>
-                      <div className="">
-                        <Car />
-                      </div>
-                      <div className="flex-col gap-1">
-                        <p>โลตัสหนองจอก</p>
-                        <p className="text-xs text-gray-500 text-right">
-                          09:00
-                        </p>
-                      </div>
-                    </div>
+                    <OriginToDestination
+                      origin={b.origin}
+                      destination={b.destination}
+                      departTime={b.departTime}
+                      arriveTime={b.arriveTime}
+                    />
                     <div className="flex flex-row justify-between text-xs text-gray-500 w-full">
                       <div className="flex flex-row gap-8">
                         <div className="flex flex-col">
                           <p>Booking no.</p>
-                          <p className="text-black">21222423624825102612</p>
+                          <p className="text-black">{b.bookingNo}</p>
                         </div>
                         <div className="flex flex-col">
                           <p>Vehicle no.</p>
-                          <p className="text-black">สย 2591 กทม</p>
+                          <p className="text-black">{b.vehicleNo}</p>
                         </div>
                       </div>
                       <div className="flex flex-col justify-center items-center">

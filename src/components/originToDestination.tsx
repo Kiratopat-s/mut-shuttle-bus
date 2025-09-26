@@ -1,0 +1,36 @@
+import { Car, EllipsisVertical } from "lucide-react";
+import React from "react";
+
+interface OriginToDestinationProps {
+  origin?: string;
+  destination?: string;
+  departTime?: string;
+  arriveTime?: string;
+}
+
+function OriginToDestination({
+  origin = "มหาวิทยลัยมหานคร",
+  destination = "โลตัสหนองจอก",
+  departTime = "08:00",
+  arriveTime = "09:00",
+}: OriginToDestinationProps) {
+  return (
+    <>
+      <div className="flex flex-row gap-4 items-center w-full justify-between">
+        <div className="flex-col gap-1">
+          <p>{origin}</p>
+          <p className="text-xs text-gray-500">{departTime}</p>
+        </div>
+        <div className="">
+          <Car />
+        </div>
+        <div className="flex-col gap-1">
+          <p>{destination}</p>
+          <p className="text-xs text-gray-500 text-right">{arriveTime}</p>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default OriginToDestination;
