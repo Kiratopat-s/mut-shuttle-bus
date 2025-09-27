@@ -5,6 +5,7 @@ import { ButtonWithIcon } from "./buttonWithLogo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useQueryState, parseAsBoolean } from "nuqs";
 import SearchModal from "./modal/searchModal";
+import Link from "next/link";
 
 // interface UpperProps {
 //   search: () => void;
@@ -38,13 +39,15 @@ export function Upper(
     <>
       <SearchModal isOpen={searchModalOpen} close={handleCloseQrModal} />
       <div className="flex flex-row items-center justify-between w-full z-[100]">
-        <div className="flex flex-row gap-2 items-center">
-          <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-          <p>Hi {User.name}</p>
-        </div>
+        <Link href="/me">
+          <div className="flex flex-row gap-2 items-center">
+            <Avatar>
+              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <p>Hi {User.name}</p>
+          </div>
+        </Link>
         <ButtonWithIcon onclick={handleOpenQrModal} icon={<Search />} />
       </div>
     </>

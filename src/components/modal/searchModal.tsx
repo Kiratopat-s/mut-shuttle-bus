@@ -12,7 +12,7 @@ interface SearchModalProps {
 function SearchModal({ isOpen, close }: SearchModalProps) {
   return (
     isOpen && (
-      <div className="w-screen h-screen bg-white items-center justify-center p-4 absolute top-0 left-0 z-[100]">
+      <div className="w-screen h-screen bg-white items-center justify-center p-4 absolute top-0 left-0 z-[10000]">
         <div className="flex flex-col">
           <div className="flex flex-row justify-between gap-4 border-b border-gray-300 pb-4">
             <div
