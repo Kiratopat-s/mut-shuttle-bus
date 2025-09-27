@@ -4,7 +4,7 @@ import React from "react";
 
 function Footer() {
   return (
-    <div className="flex flex-row py-2 justify-around w-full border-t border-gray-300">
+    <div className="flex flex-row py-2 justify-around w-full bg-white border-t border-gray-300 z-[100]">
       <Link href="/">
         <div className="flex flex-col justify-center items-center">
           <Bus />

@@ -37,7 +37,7 @@ export function Upper(
   return (
     <>
       <SearchModal isOpen={searchModalOpen} close={handleCloseQrModal} />
-      <div className="flex flex-row items-center justify-between w-full">
+      <div className="flex flex-row items-center justify-between w-full z-[100]">
         <div className="flex flex-row gap-2 items-center">
           <Avatar>
             <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />

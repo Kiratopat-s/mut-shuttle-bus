@@ -1,14 +1,11 @@
 import * as React from "react";
 
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { EllipsisVertical, MonitorCog, QrCode } from "lucide-react";
-import { ButtonWithIcon } from "./buttonWithLogo";
-import OriginToDestination from "./originToDestination";
+import MiniBookingCard from "./miniBookingCard";
 
 const MockBookings = [
   {
@@ -56,46 +53,11 @@ export function CarouselCheckIn({ onOpenQrModal }: CarouselCheckInProps) {
     <Carousel className="w-full max-w-sm">
       <CarouselContent>
         {MockBookings.map((b) => (
-          <CarouselItem onClick={handleOpenQrPassengerModal} key={b.id}>
-            <div className="p-2">
-              <Card className="!p-0">
-                <CardContent className="flex items-center justify-center p-4">
-                  <div className="flex flex-col gap-2 w-full">
-                    <div className="flex justify-between w-full items-center">
-                      <p>Departs {b.departDate}</p>
-                      <EllipsisVertical className=" scale-90 text-gray-500" />
-                    </div>
-                    <OriginToDestination
-                      origin={b.origin}
-                      destination={b.destination}
-                      departTime={b.departTime}
-                      arriveTime={b.arriveTime}
-                    />
-                    <div className="flex flex-row justify-between text-xs text-gray-500 w-full">
-                      <div className="flex flex-row gap-8">
-                        <div className="flex flex-col">
-                          <p>Booking no.</p>
-                          <p className="text-black">{b.bookingNo}</p>
-                        </div>
-                        <div className="flex flex-col">
-                          <p>Vehicle no.</p>
-                          <p className="text-black">{b.vehicleNo}</p>
-                        </div>
-                      </div>
-                      <div className="flex flex-col justify-center items-center">
-                        <QrCode className="text-red-500 scale-125" />
-                      </div>
-                    </div>
-                    <ButtonWithIcon
-                      name="Manage booking"
-                      icon={<MonitorCog />}
-                      classname="bg-red-500 text-white cursor-pointer hover:bg-red-600 hover:text-white"
-                    />
-                  </div>
-                  {/* <span className="text-4xl font-semibold">{index + 1}</span> */}
-                </CardContent>
-              </Card>
-            </div>
+          <CarouselItem key={b.id}>
+            <MiniBookingCard
+              bookingInfo={b}
+              handleOpenQrPassengerModal={handleOpenQrPassengerModal}
+            />
           </CarouselItem>
         ))}
       </CarouselContent>

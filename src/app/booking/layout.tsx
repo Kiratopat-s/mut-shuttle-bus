@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Kanit } from "next/font/google";
 import "@/app/globals.css";
-import Footer from "@/components/footer";
-import { Upper } from "@/components/upper";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const kanit = Kanit({
