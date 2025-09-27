@@ -2,7 +2,7 @@
 
 import { CarouselCheckIn } from "@/components/carouselCheckIn";
 import HomeMainMenu from "@/components/homeMainMenu";
-import QrPassanger from "@/components/qrPassanger";
+import QrPassanger from "@/components/modal/qrPassangerModal";
 import { useQueryState, parseAsBoolean } from "nuqs";
 
 export default function Home() {

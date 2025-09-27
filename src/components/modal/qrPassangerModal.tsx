@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import OriginToDestination from "./originToDestination";
+import OriginToDestination from "../originToDestination";
 
 interface QrPassangerProps {
   isOpen?: boolean;
@@ -21,7 +21,7 @@ function QrPassanger({ isOpen = true, onClose }: QrPassangerProps) {
     <div
       className={`${
         isOpen ? "flex" : "hidden"
-      } w-screen h-screen bg-red-900 items-center justify-center p-4 absolute top-0 left-0 z-[100]`}
+      } w-screen h-screen bg-red-900 items-center justify-center p-4 absolute top-0 left-0 z-[1000]`}
     >
       <Card className="w-full max-w-sm">
         <CardHeader className="relative">
