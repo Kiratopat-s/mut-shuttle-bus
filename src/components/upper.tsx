@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { ButtonWithIcon } from "./buttonWithLogo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useQueryState, parseAsBoolean } from "nuqs";
-import SearchModal from "./modal/searchModal";
+import SearchModal from "./modals/searchModal";
 import Link from "next/link";
 
 // interface UpperProps {
