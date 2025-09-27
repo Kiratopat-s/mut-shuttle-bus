@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { ButtonWithIcon } from "./buttonWithLogo";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useQueryState, parseAsBoolean } from "nuqs";
@@ -9,6 +9,10 @@ import SearchModal from "./modal/searchModal";
 // interface UpperProps {
 //   search: () => void;
 // }
+
+const User = {
+  name: "Kiratipat",
+};
 
 export function Upper(
   {
@@ -34,7 +38,7 @@ export function Upper(
     <>
       <SearchModal isOpen={searchModalOpen} close={handleCloseQrModal} />
       <div className="flex flex-row items-center justify-between w-full">
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row gap-2 items-center">
           <Avatar>
             <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
             <AvatarFallback>CN</AvatarFallback>

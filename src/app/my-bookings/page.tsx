@@ -1,11 +1,9 @@
 import React from "react";
-import Image from "next/image";
 
 function Page() {
   return (
     <main className="flex flex-col h-[80vh] justify-start items-center">
-      Routes
-      <Image src="/bmt-routes.png" alt="BMT Routes" width={300} height={300} />
+      My Booking
     </main>
   );
 }

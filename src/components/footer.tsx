@@ -20,10 +20,10 @@ function Footer() {
           <p className="text-gray-500">Routes</p>
         </div>
       </Link>
-      <Link href="/purchase">
+      <Link href="/my-bookings">
         <div className="flex flex-col justify-center items-center text-gray-500">
           <TicketCheck />
-          <p>Purchase</p>
+          <p>Bookings</p>
         </div>
       </Link>
     </div>

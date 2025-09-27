@@ -1,6 +1,7 @@
 "use client";
 
 import { CarouselCheckIn } from "@/components/carouselCheckIn";
+import HomeMainMenu from "@/components/homeMainMenu";
 import QrPassanger from "@/components/qrPassanger";
 import { useQueryState, parseAsBoolean } from "nuqs";
 
@@ -22,10 +23,11 @@ export default function Home() {
     <>
       <QrPassanger isOpen={qrModalOpen} onClose={handleCloseQrModal} />
       {/* body */}
-      <div className="flex flex-col h-full justify-start gap-4">
+      <div className="flex flex-col h-[80vh] gap-12">
         <div className="p-2 bg-red-900 rounded-xl w-full max-w-lg">
           <CarouselCheckIn onOpenQrModal={handleOpenQrModal} />
         </div>
+        <HomeMainMenu />
       </div>
       {/* end body */}
     </>
