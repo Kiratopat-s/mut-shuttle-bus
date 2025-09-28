@@ -3,6 +3,7 @@ import {
   TicketPlus,
   TicketsPlane,
   WalletCards,
+  LayoutDashboard
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -35,6 +36,12 @@ const MockMenu: HomeMenu[] = [
     icon: <BrickWallShield />,
     link: "/admin",
   },
+  {
+    name: "Report",
+    icon: <LayoutDashboard />,
+    link: "/report",
+
+  }
 ];
 
 function HomeMainMenu() {
