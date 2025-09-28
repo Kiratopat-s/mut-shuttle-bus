@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  roleId         Int              @id @default(autoincrement()) @map("role_id")
+  roleName       String           @unique @map("role_name")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @default(now()) @updatedAt @map("updated_at")
+  RolePermission RolePermission[]
+  users          User[]
+
+  @@map("roles")
+}
+
+model Permission {
+  permissionId   Int              @id @default(autoincrement()) @map("permission_id")
+  permissionName String           @unique @map("permission_name")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @default(now()) @updatedAt @map("updated_at")
+  RolePermission RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       Int        @map("role_id")
+  permissionId Int        @map("permission_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at")
+  permission   Permission @relation(fields: [permissionId], references: [permissionId])
+  role         Role       @relation(fields: [roleId], references: [roleId])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Department {
+  departmentId   Int        @id @default(autoincrement()) @map("department_id")
+  departmentName String     @unique @map("department_name")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @default(now()) @updatedAt @map("updated_at")
+  employees      Employee[]
+
+  @@map("departments")
+}
+
+model Employee {
+  employeeId   Int         @id @default(autoincrement()) @map("employee_id")
+  departmentId Int?        @map("department_id")
+  position     String      @map("position")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @default(now()) @updatedAt @map("updated_at")
+  department   Department? @relation(fields: [departmentId], references: [departmentId])
+  User         User[]
+
+  @@map("employees")
+}
+
+model BusStop {
+  busStopId          Int            @id @default(autoincrement()) @map("bus_stop_id")
+  stopName           String         @map("stop_name")
+  lat                Float          @map("lat")
+  lng                Float          @map("lng")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @default(now()) @updatedAt @map("updated_at")
+  BookingDestination Booking[]      @relation("DestinationStop")
+  BookingOrigin      Booking[]      @relation("OriginStop")
+  RouteBusStop       RouteBusStop[]
+  vehicles           Vehicle[]
+
+  @@map("bus_stops")
+}
+
+model Route {
+  routeId              Int                    @id @default(autoincrement()) @map("route_id")
+  routeName            String                 @unique @map("route_name")
+  overallTravelTime    Int                    @map("overall_travel_time")
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @default(now()) @updatedAt @map("updated_at")
+  NextStop             RouteBusStop[]         @relation("NextStop")
+  RouteBusStop         RouteBusStop[]
+  VehicleRouteSchedule VehicleRouteSchedule[]
+  Vehicle              Vehicle[]              @relation("RouteToVehicle")
+
+  @@map("routes")
+}
+
+model VehicleType {
+  VehicleTypeId   Int       @id @default(autoincrement()) @map("vehicle_type_id")
+  VehicleTypeName String    @unique @map("vehicle_type_name")
+  defaultCapacity Int       @map("default_capacity")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+  Vehicle         Vehicle[]
+
+  @@map("vehicle_types")
+}
+
+model RouteBusStop {
+  routeId    Int      @map("route_id")
+  busStopId  Int      @map("bus_stop_id")
+  nextStopId Int      @map("next_stop_id")
+  stopOrder  Int      @map("stop_order")
+  travelTime Int      @map("travel_time")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  route    Route   @relation(fields: [routeId], references: [routeId])
+  busStop  BusStop @relation(fields: [busStopId], references: [busStopId])
+  nextStop Route   @relation("NextStop", fields: [nextStopId], references: [routeId])
+
+  @@id([routeId, busStopId])
+  @@map("route_bus_stops")
+}
+
+model Vehicle {
+  vehicleId     Int           @id @default(autoincrement()) @map("vehicle_id")
+  vehicleTypeId Int           @map("vehicle_type_id")
+  currentStopId Int?          @map("current_stop_id")
+  licensePlate  String        @unique @map("license_plate")
+  capacity      Int           @map("capacity")
+  status        VehicleStatus @default(INACTIVE) @map("status")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  busStop     BusStop?    @relation(fields: [currentStopId], references: [busStopId])
+  vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [VehicleTypeId])
+
+  VehicleRouteSchedule VehicleRouteSchedule[]
+  Route                Route[]                @relation("RouteToVehicle")
+
+  @@map("vehicles")
+}
+
+model VehicleRouteSchedule {
+  vehicleRouteScheduleId Int         @id @default(autoincrement()) @map("vehicle_route_schedule_id")
+  vehicleId              Int         @map("vehicle_id")
+  routeId                Int         @map("route_id")
+  driverId               Int         @map("driver_id")
+  scheduleTime           DateTime    @map("schedule_time")
+  status                 RouteStatus @default(UPCOMING) @map("status")
+  createdAt              DateTime    @default(now()) @map("created_at")
+  updatedAt              DateTime    @default(now()) @updatedAt @map("updated_at")
+
+  driver  User    @relation(fields: [driverId], references: [userId])
+  route   Route   @relation(fields: [routeId], references: [routeId])
+  vehicle Vehicle @relation(fields: [vehicleId], references: [vehicleId])
+
+  Booking Booking[]
+
+  @@map("vehicle_route_schedules")
+}
+
+model User {
+  userId     Int      @id @default(autoincrement()) @map("user_id")
+  roleId     Int      @map("role_id")
+  employeeId Int?     @map("employee_id")
+  firstName  String   @map("first_name")
+  lastName   String   @map("last_name")
+  email      String   @unique @map("email")
+  password   String   @map("password")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  employee Employee? @relation(fields: [employeeId], references: [employeeId])
+  role     Role      @relation(fields: [roleId], references: [roleId])
+
+  Booking              Booking[]
+  VehicleRouteSchedule VehicleRouteSchedule[]
+
+  @@map("users")
+}
+
+model Booking {
+  bookingId              Int           @id @default(autoincrement()) @map("booking_id")
+  originStopId           Int           @map("origin_stop_id")
+  destinationStopId      Int           @map("destination_stop_id")
+  userId                 Int           @map("user_id")
+  vehicleRouteScheduleId Int           @map("vehicle_route_schedule_id")
+  status                 BookingStatus @default(BOOKED) @map("status")
+  createdAt              DateTime      @default(now()) @map("created_at")
+  updatedAt              DateTime      @default(now()) @updatedAt @map("updated_at")
+
+  destinationStop      BusStop              @relation("DestinationStop", fields: [destinationStopId], references: [busStopId])
+  originStop           BusStop              @relation("OriginStop", fields: [originStopId], references: [busStopId])
+  user                 User                 @relation(fields: [userId], references: [userId])
+  vehicleRouteSchedule VehicleRouteSchedule @relation(fields: [vehicleRouteScheduleId], references: [vehicleRouteScheduleId])
+
+  @@map("bookings")
+}
+
+enum VehicleStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+}
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+  MISSED
+  COMPLETED
+}
+
+enum RouteStatus {
+  UPCOMING
+  CANCELLED
+  COMPLETED
+}

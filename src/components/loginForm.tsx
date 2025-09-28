@@ -31,21 +31,23 @@ export default function LoginForm() {
     setError("");
 
     try {
-      // TODO: Replace with actual API call
-      console.log("Login attempt:", formData);
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // For demo purposes - replace with actual authentication logic
-      if (formData.email && formData.password) {
-        // Successful login - redirect to dashboard
-        router.push("/dashboard");
-      } else {
-        setError("กรุณากรอกข้อมูลให้ครบถ้วน");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
       }
+
+      router.push("/dashboard");
     } catch (err) {
-      setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
+      setError(`เกิดข้อผิดพลาดในการเข้าสู่ระบบ`);
+      console.error("Login error:", err);
     } finally {
       setIsLoading(false);
     }

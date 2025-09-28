@@ -7,14 +7,11 @@ import { useQueryState, parseAsBoolean } from "nuqs";
 import SearchModal from "./modals/searchModal";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUserInformation } from "@/provider/UserProvider";
 
 // interface UpperProps {
 //   search: () => void;
 // }
-
-const User = {
-  name: "Kiratipat",
-};
 
 export function Upper(
   {
@@ -24,6 +21,9 @@ export function Upper(
   }
 ) {
   const router = useRouter();
+
+  const info = useUserInformation();
+
   const [searchModalOpen, setSearchModalOpen] = useQueryState(
     "search",
     parseAsBoolean.withDefault(false)
@@ -37,6 +37,10 @@ export function Upper(
     setSearchModalOpen(false);
   };
 
+  if (!info.user) {
+    return null;
+  }
+
   return (
     <div className="sticky top-0 w-full bg-white h-auto z-[100] py-4 ">
       <SearchModal isOpen={searchModalOpen} close={handleCloseQrModal} />
@@ -47,7 +51,7 @@ export function Upper(
               <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
-            <p>Hi {User.name}</p>
+            <p>Hi {info.user.firstName}</p>
           </div>
         </Link>
         <div className="flex gap-2">

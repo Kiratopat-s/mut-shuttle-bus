@@ -3,6 +3,7 @@ import { Kanit } from "next/font/google";
 import "@/app/globals.css";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import AppShell from "@/components/AppShell";
+import UserProvider from "@/provider/UserProvider";
 
 const kanit = Kanit({
   variable: "--font-kanit",
@@ -27,9 +28,9 @@ export default function RootLayout({
         className={`${kanit.className} ${kanit.variable} ${kanit.style} antialiased`}
       >
         <NuqsAdapter>
-          <AppShell>
-            {children}
-          </AppShell>
+          <UserProvider>
+            <AppShell>{children}</AppShell>
+          </UserProvider>
         </NuqsAdapter>
       </body>
     </html>

@@ -1,8 +1,8 @@
 import { Base64 } from "js-base64";
-import { PrismaClient } from "../../../../../generated/prismaprisma/client";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { PrismaClient } from "@/generated/prisma";
 
 const prisma = new PrismaClient();
 
@@ -10,6 +10,43 @@ export interface LoginRequest {
   email: string;
   password: string;
 }
+
+export interface UserPayload {
+  email: string;
+  password: string;
+  userId: number;
+  roleId: number;
+  employeeId: number | null;
+  firstName: string;
+  lastName: string;
+  createdAt: Date;
+  updatedAt: Date;
+  role: {
+    roleId: number;
+    createdAt: Date;
+    updatedAt: Date;
+    roleName: string;
+  };
+  employee: {
+    employeeId: number;
+    createdAt: Date;
+    updatedAt: Date;
+    departmentId: number | null;
+    position: string;
+  } | null;
+}
+
+export const validateAccessToken = (token: string) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+    if (typeof decoded === "string" || decoded === null) return null;
+    const user = decoded as UserPayload;
+    return user;
+  } catch (error) {
+    console.error("Invalid token:", error);
+    return null;
+  }
+};
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const { email, password }: LoginRequest = await req.json();
@@ -36,10 +73,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   const accessToken = jwt.sign(user, process.env.JWT_SECRET as string, {
-    expiresIn: "15m",
-  });
-
-  const refreshToken = jwt.sign(user, process.env.JWT_SECRET as string, {
     expiresIn: "7d",
   });
 
@@ -48,13 +81,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   cookie.set({
     name: "accessToken",
     value: accessToken,
-    httpOnly: true,
-    sameSite: "strict",
-  });
-
-  cookie.set({
-    name: "refreshToken",
-    value: refreshToken,
     httpOnly: true,
     sameSite: "strict",
   });
