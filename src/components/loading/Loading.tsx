@@ -7,7 +7,7 @@ interface Props {
 
 export default function Loading({ title }: Props) {
   return (
-    <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-white flex items-center justify-center z-[9999]">
       <div className="flex flex-col gap-4 text-center items-center">
         <Image
           src="/mut_banner.png"
