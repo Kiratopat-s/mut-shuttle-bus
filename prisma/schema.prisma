@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prismaprisma"
@@ -12,6 +6,194 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Role {
+  roleId         Int              @map("role_id") @id @default(autoincrement())
+  roleName       String           @map("role_name") @unique
+  createdAt      DateTime         @map("created_at") @default(now())
+  updatedAt      DateTime         @map("updated_at") @updatedAt @default(now())
+  RolePermission RolePermission[]
+  users          User[]
+
+  @@map("roles")
+}
+
+model Permission {
+  permissionId   Int              @map("permission_id") @id @default(autoincrement())
+  permissionName String           @map("permission_name") @unique
+  createdAt      DateTime         @map("created_at") @default(now())
+  updatedAt      DateTime         @map("updated_at") @updatedAt @default(now())
+  RolePermission RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       Int              @map("role_id")
+  permissionId Int              @map("permission_id")
+  createdAt    DateTime         @map("created_at") @default(now())
+  updatedAt    DateTime         @map("updated_at") @updatedAt @default(now())
+  permission   Permission       @relation(fields: [permissionId], references: [permissionId])
+  role         Role             @relation(fields: [roleId], references: [roleId])
+
+  @@map("role_permissions")
+  @@id([roleId, permissionId])
+}
+
+model Department {
+  departmentId   Int        @map("department_id") @id @default(autoincrement())
+  departmentName String     @map("department_name") @unique
+  createdAt      DateTime   @map("created_at") @default(now())
+  updatedAt      DateTime   @map("updated_at") @updatedAt @default(now())
+  employees      Employee[]
+
+  @@map("departments")
+}
+
+model Employee {
+  employeeId   Int        @map("employee_id")  @id @default(autoincrement())
+  departmentId Int?        @map("department_id")
+  position     String     @map("position")
+  createdAt    DateTime   @map("created_at") @default(now())
+  updatedAt    DateTime   @map("updated_at") @updatedAt @default(now())
+  department   Department? @relation(fields: [departmentId], references: [departmentId])
+  User         User[]
+
+  @@map("employees")
+}
+
+model BusStop {
+  busStopId          Int            @map("bus_stop_id") @id @default(autoincrement())
+  stopName           String         @map("stop_name")
+  lat                Float          @map("lat")
+  lng                Float          @map("lng")
+  createdAt          DateTime       @map("created_at") @default(now())
+  updatedAt          DateTime       @map("updated_at") @updatedAt @default(now())
+  BookingDestination Booking[]      @relation("DestinationStop")
+  BookingOrigin      Booking[]      @relation("OriginStop")
+  RouteBusStop       RouteBusStop[]
+  vehicles           Vehicle[]
+
+  @@map("bus_stops")
+}
+
+model Route {
+  routeId              Int                    @map("route_id") @id @default(autoincrement())
+  routeName            String                 @map("route_name") @unique
+  overallTravelTime    Int                    @map("overall_travel_time")
+  createdAt            DateTime               @map("created_at") @default(now())
+  updatedAt            DateTime               @map("updated_at") @updatedAt @default(now())
+  NextStop             RouteBusStop[]         @relation("NextStop")
+  RouteBusStop         RouteBusStop[]
+  VehicleRouteSchedule VehicleRouteSchedule[]
+  Vehicle              Vehicle[]              @relation("RouteToVehicle")
+
+  @@map("routes")
+}
+
+model VehicleType {
+  VehicleTypeId   Int       @map("vehicle_type_id") @id @default(autoincrement())
+  VehicleTypeName String    @map("vehicle_type_name") @unique
+  defaultCapacity Int       @map("default_capacity")
+  createdAt       DateTime  @map("created_at") @default(now())
+  updatedAt       DateTime  @map("updated_at") @updatedAt @default(now())
+  Vehicle         Vehicle[]
+
+  @@map("vehicle_types")
+}
+
+model RouteBusStop {
+  routeId    Int       @map("route_id")
+  busStopId  Int       @map("bus_stop_id")
+  nextStopId Int       @map("next_stop_id")
+  stopOrder  Int       @map("stop_order")
+  travelTime Int       @map("travel_time")
+  createdAt  DateTime  @map("created_at") @default(now())
+  updatedAt  DateTime  @map("updated_at") @updatedAt @default(now())
+
+  route      Route    @relation(fields: [routeId], references: [routeId])
+  busStop    BusStop  @relation(fields: [busStopId], references: [busStopId])
+  nextStop   Route    @relation("NextStop", fields: [nextStopId], references: [routeId])
+
+  @@map("route_bus_stops")
+  @@id([routeId, busStopId])
+}
+
+model Vehicle {
+  vehicleId            Int                     @map("vehicle_id") @id @default(autoincrement())
+  vehicleTypeId        Int                     @map("vehicle_type_id")
+  currentStopId        Int?                     @map("current_stop_id")
+  licensePlate         String                  @map("license_plate") @unique
+  capacity             Int                     @map("capacity")
+  status               VehicleStatus           @map("status") @default(INACTIVE)
+  createdAt            DateTime                @map("created_at") @default(now())
+  updatedAt            DateTime                @map("updated_at") @updatedAt @default(now())
+
+  busStop              BusStop?                 @relation(fields: [currentStopId], references: [busStopId])
+  vehicleType          VehicleType             @relation(fields: [vehicleTypeId], references: [VehicleTypeId])
+
+  VehicleRouteSchedule VehicleRouteSchedule[]
+  Route                Route[]                 @relation("RouteToVehicle")
+
+  @@map("vehicles")
+}
+
+model VehicleRouteSchedule {
+  vehicleRouteScheduleId Int            @map("vehicle_route_schedule_id") @id @default(autoincrement())
+  vehicleId              Int            @map("vehicle_id")
+  routeId                Int            @map("route_id")
+  driverId               Int            @map("driver_id")
+  scheduleTime           DateTime       @map("schedule_time")
+  status                 RouteStatus  @map("status") @default(UPCOMING)
+  createdAt              DateTime       @map("created_at") @default(now())
+  updatedAt              DateTime       @map("updated_at") @updatedAt @default(now())
+
+  driver                 User          @relation(fields: [driverId], references: [userId])
+  route                  Route         @relation(fields: [routeId], references: [routeId])
+  vehicle                Vehicle       @relation(fields: [vehicleId], references: [vehicleId])
+
+  Booking                Booking[]
+
+  @@map("vehicle_route_schedules")
+}
+
+model User {
+  userId               Int                  @map("user_id") @id @default(autoincrement())
+  roleId               Int                  @map("role_id")
+  employeeId           Int?                  @map("employee_id")
+  firstName            String               @map("first_name")
+  lastName             String               @map("last_name")
+  email                String               @map("email") @unique
+  password             String               @map("password")
+  createdAt            DateTime             @map("created_at") @default(now())
+  updatedAt            DateTime             @map("updated_at") @updatedAt @default(now())
+
+  employee             Employee?               @relation(fields: [employeeId], references: [employeeId])
+  role                 Role                   @relation(fields: [roleId], references: [roleId])
+
+  Booking              Booking[]
+  VehicleRouteSchedule VehicleRouteSchedule[]
+
+  @@map("users")
+}
+
+model Booking {
+  bookingId              Int                  @map("booking_id") @id @default(autoincrement())
+  originStopId           Int                  @map("origin_stop_id")
+  destinationStopId      Int                  @map("destination_stop_id")
+  userId                 Int                  @map("user_id")
+  vehicleRouteScheduleId Int                  @map("vehicle_route_schedule_id")
+  status                 BookingStatus        @map("status") @default(BOOKED)
+  createdAt              DateTime             @map("created_at") @default(now())
+  updatedAt              DateTime             @map("updated_at") @updatedAt @default(now())
+
+  destinationStop        BusStop              @relation("DestinationStop", fields: [destinationStopId], references: [busStopId])
+  originStop             BusStop              @relation("OriginStop", fields: [originStopId], references: [busStopId])
+  user                   User                 @relation(fields: [userId], references: [userId])
+  vehicleRouteSchedule   VehicleRouteSchedule @relation(fields: [vehicleRouteScheduleId], references: [vehicleRouteScheduleId])
+
+  @@map("bookings")
 }
 
 enum VehicleStatus {
@@ -27,183 +209,8 @@ enum BookingStatus {
   COMPLETED
 }
 
-// Permission
-
-model Role {
-  roleId   Int      @id @default(autoincrement())
-  roleName String   @unique
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  users    User[]
-  RolePermission RolePermission[]
-}
-
-model Permission {
-  permissionId Int      @id @default(autoincrement())
-  permissionName String @unique
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-
-  RolePermission RolePermission[]
-}
-
-model RolePermission {
-  roleId       Int
-  permissionId Int
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  @@id([roleId, permissionId])
-
-  role         Role       @relation(fields: [roleId], references: [roleId])
-  permission   Permission @relation(fields: [permissionId], references: [permissionId])
-}
-
-// Department and Employee
-
-model Department {
-  departmentId Int      @id @default(autoincrement())
-  departmentName String @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  employees Employee[]
-}
-
-model Employee {
-  employeeId Int      @id @default(autoincrement())
-  departmentId Int
-  position String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  department Department @relation(fields: [departmentId], references: [departmentId])
-  User User[]
-}
-
-// Vehicle and Location
-
-model BusStop {
-  busStopId Int      @id @default(autoincrement())
-  stopName String
-  lat Float
-  lng Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vehicles Vehicle[]
-  RouteBusStop RouteBusStop[]
-
-  BookingOrigin Booking[] @relation("OriginStop")
-  BookingDestination Booking[] @relation("DestinationStop")
-}
-
-model Route {
-  routeId Int      @id @default(autoincrement())
-  routeName String
-  overallTravelTime Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  RouteBusStop RouteBusStop[]
-  Vehicle Vehicle[]
-  VehicleRouteSchedule VehicleRouteSchedule[]
-  NextStop RouteBusStop[] @relation("NextStop")
-}
-
-model VehicleType {
-  VehicleTypeId Int      @id @default(autoincrement())
-  VehicleTypeName String @unique
-  defaultCapacity Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  Vehicle Vehicle[]
-}
-
-model RouteBusStop {
-  routeId Int
-  busStopId Int
-  nextStopId Int
-  stopOrder Int
-  travelTime Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  route Route @relation(fields: [routeId], references: [routeId])
-  busStop BusStop @relation(fields: [busStopId], references: [busStopId])
-  nextStop Route @relation("NextStop", fields: [nextStopId], references: [routeId])
-  @@id([routeId, busStopId])
-}
-
-model Vehicle {
-  vehicleId Int      @id @default(autoincrement())
-  vehicleTypeId Int
-  currentStopId Int
-  licensePlate String @unique
-  capacity Int
-  status VehicleStatus @default(INACTIVE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [VehicleTypeId])
-  busStop BusStop @relation(fields: [currentStopId], references: [busStopId])
-
-  VehicleRouteSchedule VehicleRouteSchedule[]
-  Route Route[]
-}
-
-model VehicleRouteSchedule {
-  vehicleRouteScheduleId Int      @id @default(autoincrement())
-  vehicleId Int
-  routeId Int
-  driverId Int
-  scheduleTime DateTime
-  status VehicleStatus @default(INACTIVE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vehicle Vehicle @relation(fields: [vehicleId], references: [vehicleId])
-  route Route @relation(fields: [routeId], references: [routeId])
-  driver User @relation(fields: [driverId], references: [userId])
-
-  Booking Booking[]
-}
-
-// User
-
-model User {
-  userId   Int      @id @default(autoincrement())
-  roleId  Int
-  employeeId Int
-  firstName String
-  lastName String
-  email    String   @unique
-  password String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  role     Role     @relation(fields: [roleId], references: [roleId])
-  employee Employee @relation(fields: [employeeId], references: [employeeId])
-
-  VehicleRouteSchedule VehicleRouteSchedule[]
-  Booking Booking[]
-}
-
-// Booking
-
-model Booking {
-  bookingId Int      @id @default(autoincrement())
-  originStopId Int
-  destinationStopId Int
-  userId Int
-  vehicleRouteScheduleId Int
-  status BookingStatus @default(BOOKED)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  originStop BusStop @relation("OriginStop", fields: [originStopId], references: [busStopId])
-  destinationStop BusStop @relation("DestinationStop", fields: [destinationStopId], references: [busStopId])
-  user User @relation(fields: [userId], references: [userId])
-  vehicleRouteSchedule VehicleRouteSchedule @relation(fields: [vehicleRouteScheduleId], references: [vehicleRouteScheduleId])
+enum RouteStatus {
+  UPCOMING
+  CANCELLED
+  COMPLETED
 }
