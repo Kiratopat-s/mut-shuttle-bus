@@ -37,10 +37,10 @@ INSERT INTO employees (position, department_id) VALUES
 ('student', NULL);
 
 INSERT INTO users (role_id, employee_id, first_name, last_name, email, password) VALUES
-(1, 1, 'alpha', 'test', 'al@gmail.com', '098f6bcd4621d373cade4e832627b4f6'),
-(2, 2, 'beta', 'mock', 'be@gmail.com', '098f6bcd4621d373cade4e832627b4f6'),
-(3, 3, 'ceta', 'up', 'ce@gmail.com', '098f6bcd4621d373cade4e832627b4f6'),
-(4, NULL, 'gamma', 'user', 'gam@gmail.com', '098f6bcd4621d373cade4e832627b4f6');
+(1, 1, 'alpha', 'test', 'al@gmail.com', 'MTIzNA=='),
+(2, 2, 'beta', 'mock', 'be@gmail.com', 'MTIzNA=='),
+(3, 3, 'ceta', 'up', 'ce@gmail.com', 'MTIzNA=='),
+(4, NULL, 'gamma', 'user', 'gam@gmail.com', 'MTIzNA==');
 
 INSERT INTO bus_stops (stop_name, lat, lng) VALUES
 ('มหาวิทยาลัยเทคโนโลยีมหานคร', 13.842369, 100.855465),
