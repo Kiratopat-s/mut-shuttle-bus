@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { Kanit } from "next/font/google";
 import "@/app/globals.css";
-import Footer from "@/components/footer";
-import { Upper } from "@/components/upper";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { Suspense } from "react";
-import { UpperSkeleton, LoadingSkeleton } from "@/components/skeletons";
+import AppShell from "@/components/AppShell";
 
 const kanit = Kanit({
   variable: "--font-kanit",
@@ -30,13 +27,9 @@ export default function RootLayout({
         className={`${kanit.className} ${kanit.variable} ${kanit.style} antialiased`}
       >
         <NuqsAdapter>
-          <div className="flex min-h-screen flex-col items-center justify-between p-4 gap-4">
-            <Suspense fallback={<UpperSkeleton />}>
-              <Upper />
-            </Suspense>
-            <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
-            <Footer />
-          </div>
+          <AppShell>
+            {children}
+          </AppShell>
         </NuqsAdapter>
       </body>
     </html>
