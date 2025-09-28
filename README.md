@@ -4,7 +4,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 First, run the development server:
 
-````bash
+```bash
 # for db local
 docker run -d \
   --name mut-mini-project-postgres-17 \
@@ -14,6 +14,7 @@ docker run -d \
   -p 5432:5432 \
   -v pgdata17:/var/lib/postgresql/data \
   postgres:17
+```
 
 ```bash
 npm run dev
@@ -23,7 +24,7 @@ yarn dev
 pnpm dev
 # or
 bun dev
-````
+```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
