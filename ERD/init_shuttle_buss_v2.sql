@@ -101,8 +101,8 @@ CREATE TABLE vehicle (
     capacity INT NOT NULL,
     status TEXT NOT NULL,
 
-    current_location INT,
-    FOREIGN KEY (current_location) REFERENCES buss_stop(buss_stop_id)
+    current_stop_id INT,
+    FOREIGN KEY (current_stop_id) REFERENCES buss_stop(buss_stop_id)
 
 )
 
