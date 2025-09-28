@@ -14,21 +14,196 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  SUPER_ADMIN
-  ADMIN
-  DRIVER
-  PASSENGER
+enum VehicleStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
 }
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+  MISSED
+  COMPLETED
+}
+
+// Permission
+
+model Role {
+  roleId   Int      @id @default(autoincrement())
+  roleName String   @unique
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  users    User[]
+  RolePermission RolePermission[]
+}
+
+model Permission {
+  permissionId Int      @id @default(autoincrement())
+  permissionName String @unique
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  RolePermission RolePermission[]
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  @@id([roleId, permissionId])
+
+  role         Role       @relation(fields: [roleId], references: [roleId])
+  permission   Permission @relation(fields: [permissionId], references: [permissionId])
+}
+
+// Department and Employee
+
+model Department {
+  departmentId Int      @id @default(autoincrement())
+  departmentName String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees Employee[]
+}
+
+model Employee {
+  employeeId Int      @id @default(autoincrement())
+  departmentId Int
+  position String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  department Department @relation(fields: [departmentId], references: [departmentId])
+  User User[]
+}
+
+// Vehicle and Location
+
+model BusStop {
+  busStopId Int      @id @default(autoincrement())
+  stopName String
+  lat Float
+  lng Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicles Vehicle[]
+  RouteBusStop RouteBusStop[]
+
+  BookingOrigin Booking[] @relation("OriginStop")
+  BookingDestination Booking[] @relation("DestinationStop")
+}
+
+model Route {
+  routeId Int      @id @default(autoincrement())
+  routeName String
+  overallTravelTime Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  RouteBusStop RouteBusStop[]
+  Vehicle Vehicle[]
+  VehicleRouteSchedule VehicleRouteSchedule[]
+  NextStop RouteBusStop[] @relation("NextStop")
+}
+
+model VehicleType {
+  VehicleTypeId Int      @id @default(autoincrement())
+  VehicleTypeName String @unique
+  defaultCapacity Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Vehicle Vehicle[]
+}
+
+model RouteBusStop {
+  routeId Int
+  busStopId Int
+  nextStopId Int
+  stopOrder Int
+  travelTime Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  route Route @relation(fields: [routeId], references: [routeId])
+  busStop BusStop @relation(fields: [busStopId], references: [busStopId])
+  nextStop Route @relation("NextStop", fields: [nextStopId], references: [routeId])
+  @@id([routeId, busStopId])
+}
+
+model Vehicle {
+  vehicleId Int      @id @default(autoincrement())
+  vehicleTypeId Int
+  currentStopId Int
+  licensePlate String @unique
+  capacity Int
+  status VehicleStatus @default(INACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [VehicleTypeId])
+  busStop BusStop @relation(fields: [currentStopId], references: [busStopId])
+
+  VehicleRouteSchedule VehicleRouteSchedule[]
+  Route Route[]
+}
+
+model VehicleRouteSchedule {
+  vehicleRouteScheduleId Int      @id @default(autoincrement())
+  vehicleId Int
+  routeId Int
+  driverId Int
+  scheduleTime DateTime
+  status VehicleStatus @default(INACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [vehicleId])
+  route Route @relation(fields: [routeId], references: [routeId])
+  driver User @relation(fields: [driverId], references: [userId])
+
+  Booking Booking[]
+}
+
+// User
 
 model User {
   userId   Int      @id @default(autoincrement())
+  roleId  Int
+  employeeId Int
   firstName String
   lastName String
   email    String   @unique
   password String
-  role     Role     @default(PASSENGER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  deletedAt DateTime?
+
+  role     Role     @relation(fields: [roleId], references: [roleId])
+  employee Employee @relation(fields: [employeeId], references: [employeeId])
+
+  VehicleRouteSchedule VehicleRouteSchedule[]
+  Booking Booking[]
+}
+
+// Booking
+
+model Booking {
+  bookingId Int      @id @default(autoincrement())
+  originStopId Int
+  destinationStopId Int
+  userId Int
+  vehicleRouteScheduleId Int
+  status BookingStatus @default(BOOKED)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  originStop BusStop @relation("OriginStop", fields: [originStopId], references: [busStopId])
+  destinationStop BusStop @relation("DestinationStop", fields: [destinationStopId], references: [busStopId])
+  user User @relation(fields: [userId], references: [userId])
+  vehicleRouteSchedule VehicleRouteSchedule @relation(fields: [vehicleRouteScheduleId], references: [vehicleRouteScheduleId])
 }
