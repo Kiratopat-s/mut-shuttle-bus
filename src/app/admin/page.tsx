@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Search, Edit, Trash2, Eye, Users,Shield } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Users, Shield, X, UserPlus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+
 interface User {
   id: string
   name: string
@@ -41,6 +42,7 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRole, setFilterRole] = useState<string>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -70,9 +72,9 @@ export default function AdminPage() {
     })
     setIsModalOpen(true)
   }
+
   const handleManagePermissions = () => {
     router.push(`/permission`)
-    
   }
 
   const handleDeleteUser = (userId: string) => {
@@ -81,8 +83,12 @@ export default function AdminPage() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsLoading(true)
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500))
     
     if (editingUser) {
       // Update existing user
@@ -101,6 +107,7 @@ export default function AdminPage() {
       setUsers([...users, newUser])
     }
     
+    setIsLoading(false)
     setIsModalOpen(false)
   }
 
@@ -113,7 +120,14 @@ export default function AdminPage() {
     }
   }
 
-
+  const getRoleIcon = (role: User['role']) => {
+    switch (role) {
+      case 'admin': return '👨‍💼'
+      case 'driver': return '🚐'
+      case 'student': return '🎓'
+      default: return '👤'
+    }
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6">
@@ -158,17 +172,18 @@ export default function AdminPage() {
           onClick={handleAddUser}
           className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
         >
-          <Plus className="w-5 h-5 " />
+          <Plus className="w-5 h-5" />
           เพิ่มผู้ใช้
         </button>
-         <button
-           onClick={() => handleManagePermissions()}
-           className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-           title="จัดการสิทธิ์"
-         >
-           <Shield className="w-4 h-4" />
-           จัดการสิทธิ์
-         </button>
+        
+        <button
+          onClick={() => handleManagePermissions()}
+          className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          title="จัดการสิทธิ์"
+        >
+          <Shield className="w-4 h-4" />
+          จัดการสิทธิ์
+        </button>
       </div>
 
       {/* Table */}
@@ -235,71 +250,125 @@ export default function AdminPage() {
         )}
       </div>
 
-      {/* Modal */}
+      {/* Beautiful Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-red-200 bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {editingUser ? 'แก้ไขผู้ใช้' : 'เพิ่มผู้ใช้ใหม่'}
-            </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop with blur */}
+          <div 
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => !isLoading && setIsModalOpen(false)}
+          />
+          
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 slide-in-from-bottom-4 duration-200">
+            {/* Header with gradient */}
+            <div className="relative bg-gradient-to-r from-red-500 to-pink-500 px-6 py-4 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                    {editingUser ? (
+                      <Edit className="w-5 h-5 text-white" />
+                    ) : (
+                      <UserPlus className="w-5 h-5 text-white" />
+                    )}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">
+                      {editingUser ? 'แก้ไขผู้ใช้' : 'เพิ่มผู้ใช้ใหม่'}
+                    </h2>
+                    <p className="text-red-100 text-sm">
+                      {editingUser ? 'อัปเดตข้อมูลผู้ใช้งาน' : 'กรอกข้อมูลผู้ใช้ใหม่'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => !isLoading && setIsModalOpen(false)}
+                  disabled={isLoading}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
+            </div>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  ชื่อ
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Name Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-800">
+                  ชื่อผู้ใช้
                 </label>
                 <input
                   type="text"
                   required
+                  disabled={isLoading}
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-0 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  placeholder="กรุณากรอกชื่อผู้ใช้"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-800">
                   อีเมล
                 </label>
                 <input
                   type="email"
                   required
+                  disabled={isLoading}
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-0 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  placeholder="example@mut.ac.th"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              {/* Role Field */}
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-800">
                   บทบาท
                 </label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({...formData, role: e.target.value as User['role']})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="student">นักศึกษา</option>
-                  <option value="admin">ผู้ดูแลระบบ</option>
-                  <option value="driver">คนขับรถ</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={formData.role}
+                    disabled={isLoading}
+                    onChange={(e) => setFormData({...formData, role: e.target.value as User['role']})}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-0 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed appearance-none bg-white"
+                  >
+                    <option value="student">🎓 นักศึกษา</option>
+                    <option value="admin">👨‍💼 ผู้ดูแลระบบ</option>
+                    <option value="driver">🚐 คนขับรถ</option>
+                  </select>
+                </div>
               </div>
 
-              
-
+              {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
+                  disabled={isLoading}
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  disabled={isLoading}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white font-medium rounded-xl hover:from-red-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                 >
-                  {editingUser ? 'บันทึก' : 'เพิ่ม'}
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      กำลังบันทึก...
+                    </>
+                  ) : (
+                    <>
+                      {editingUser ? 'บันทึกการเปลี่ยนแปลง' : 'เพิ่มผู้ใช้'}
+                    </>
+                  )}
                 </button>
               </div>
             </form>
