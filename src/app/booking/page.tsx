@@ -1,14 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { Combobox, ComboboxItem } from "@/components/comboBox";
 import { ChevronLeft } from "lucide-react";
 import { DatePicker } from "@/components/datePicker";
 import { useQueryState, parseAsString, parseAsIsoDateTime } from "nuqs";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-function Page() {
-  // State management using nuqs
+function BookingPageContent() {
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useQueryState(
     "date",
     parseAsIsoDateTime.withDefault(new Date())
@@ -30,22 +31,18 @@ function Page() {
     parseAsString.withDefault("")
   );
 
-  // Local state for UI interactions
   const [showAdvancedOptions, setShowAdvancedOptions] = React.useState(true);
 
-  // Wrapper functions to handle type conversions
   const handleDateChange = (date: Date | undefined) => {
     setSelectedDate(date || null);
   };
 
   const handleSearch = () => {
-    // Validate required fields
     if (!isFormValid) {
       alert("Please fill in all required fields");
       return;
     }
 
-    // Here you would typically make an API call or navigate to search results
     console.log("Searching with params:", {
       date: selectedDate,
       origin,
@@ -54,8 +51,16 @@ function Page() {
       vehicle: vehicleTypeSelected || "all",
     });
 
-    // Example: You could navigate to a results page with these query parameters
-    // router.push('/search-results');
+    const searchParams = new URLSearchParams();
+    if (selectedDate) {
+      searchParams.set("date", selectedDate.toISOString());
+    }
+    if (origin) searchParams.set("origin", origin);
+    if (destination) searchParams.set("destination", destination);
+    if (guestCount) searchParams.set("guests", guestCount);
+    if (vehicleTypeSelected) searchParams.set("vehicle", vehicleTypeSelected);
+
+    router.push(`/booking/search?${searchParams.toString()}`);
   };
 
   const handleClearForm = () => {
@@ -66,7 +71,6 @@ function Page() {
     setVehicleTypeSelected("");
   };
 
-  // Check if form is valid
   const isFormValid = selectedDate && origin && destination && guestCount;
 
   const bussStop: ComboboxItem[] = [
@@ -86,7 +90,7 @@ function Page() {
   ];
 
   const vehicleType: ComboboxItem[] = [
-    { value: "1", label: "All type" },
+    { value: "1", label: "All vehicle types" },
     { value: "2", label: "Minibus" },
     { value: "3", label: "Bus" },
     { value: "4", label: "Van" },
@@ -183,7 +187,7 @@ function Page() {
             onClick={handleSearch}
             disabled={!isFormValid}
           >
-            Search for my bus
+            Search for trip
           </button>
           <button
             type="button"
@@ -249,6 +253,37 @@ function Page() {
         )}
       </div>
     </main>
+  );
+}
+
+function BookingPageLoading() {
+  return (
+    <main className="flex min-h-screen flex-col items-center w-full">
+      <div className="flex gap-4 items-center w-full p-4">
+        <div className="w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
+        <div className="h-6 bg-gray-200 rounded animate-pulse w-48"></div>
+      </div>
+      <div className="flex flex-col gap-4 w-full max-w-md px-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="space-y-2">
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+            <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+        ))}
+        <div className="flex gap-2 mt-8">
+          <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse"></div>
+          <div className="w-20 h-10 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function Page() {
+  return (
+    <Suspense fallback={<BookingPageLoading />}>
+      <BookingPageContent />
+    </Suspense>
   );
 }
 

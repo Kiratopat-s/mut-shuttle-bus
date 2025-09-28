@@ -1,133 +1,138 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Plus, Search, Edit, Trash2, Eye, Users, Shield, X, UserPlus } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useState } from "react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Users,
+  Shield,
+  X,
+  UserPlus,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface User {
-  id: string
-  name: string
-  email: string
-  role: 'admin' | 'student' | 'driver'
-  createdAt: string
+  id: string;
+  name: string;
+  email: string;
+  role: "admin" | "student" | "driver";
+  createdAt: string;
 }
 
 const mockUsers: User[] = [
   {
-    id: '1',
-    name: 'สมชาย ใจดี',
-    email: 'somchai@mut.ac.th',
-    role: 'student',
-    createdAt: '2024-01-15'
+    id: "1",
+    name: "สมชาย ใจดี",
+    email: "somchai@mut.ac.th",
+    role: "student",
+    createdAt: "2024-01-15",
   },
   {
-    id: '2',
-    name: 'สมหญิง สวยงาม',
-    email: 'somying@mut.ac.th',
-    role: 'admin',
-    createdAt: '2024-01-10'
+    id: "2",
+    name: "สมหญิง สวยงาม",
+    email: "somying@mut.ac.th",
+    role: "admin",
+    createdAt: "2024-01-10",
   },
   {
-    id: '3',
-    name: 'คนขับรถ หนึ่ง',
-    email: 'driver1@mut.ac.th',
-    role: 'driver',
-    createdAt: '2024-01-05'
-  }
-]
+    id: "3",
+    name: "คนขับรถ หนึ่ง",
+    email: "driver1@mut.ac.th",
+    role: "driver",
+    createdAt: "2024-01-05",
+  },
+];
 
 export default function AdminPage() {
-  const router = useRouter()
-  const [users, setUsers] = useState<User[]>(mockUsers)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterRole, setFilterRole] = useState<string>('all')
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const router = useRouter();
+  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterRole, setFilterRole] = useState<string>("all");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    role: 'student' as User['role'],
-  })
+    name: "",
+    email: "",
+    role: "student" as User["role"],
+  });
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRole = filterRole === 'all' || user.role === filterRole
-    return matchesSearch && matchesRole
-  })
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === "all" || user.role === filterRole;
+    return matchesSearch && matchesRole;
+  });
 
   const handleAddUser = () => {
-    setEditingUser(null)
-    setFormData({ name: '', email: '', role: 'student'})
-    setIsModalOpen(true)
-  }
+    setEditingUser(null);
+    setFormData({ name: "", email: "", role: "student" });
+    setIsModalOpen(true);
+  };
 
   const handleEditUser = (user: User) => {
-    setEditingUser(user)
+    setEditingUser(user);
     setFormData({
       name: user.name,
       email: user.email,
-      role: user.role
-    })
-    setIsModalOpen(true)
-  }
+      role: user.role,
+    });
+    setIsModalOpen(true);
+  };
 
   const handleManagePermissions = () => {
-    router.push(`/permission`)
-  }
+    router.push(`/permission`);
+  };
 
   const handleDeleteUser = (userId: string) => {
-    if (window.confirm('คุณแน่ใจหรือไม่ที่จะลบผู้ใช้นี้?')) {
-      setUsers(users.filter(user => user.id !== userId))
+    if (window.confirm("คุณแน่ใจหรือไม่ที่จะลบผู้ใช้นี้?")) {
+      setUsers(users.filter((user) => user.id !== userId));
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    
+    e.preventDefault();
+    setIsLoading(true);
+
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     if (editingUser) {
       // Update existing user
-      setUsers(users.map(user => 
-        user.id === editingUser.id 
-          ? { ...user, ...formData }
-          : user
-      ))
+      setUsers(
+        users.map((user) =>
+          user.id === editingUser.id ? { ...user, ...formData } : user
+        )
+      );
     } else {
       // Add new user
       const newUser: User = {
         id: Date.now().toString(),
         ...formData,
-        createdAt: new Date().toISOString().split('T')[0]
-      }
-      setUsers([...users, newUser])
+        createdAt: new Date().toISOString().split("T")[0],
+      };
+      setUsers([...users, newUser]);
     }
-    
-    setIsLoading(false)
-    setIsModalOpen(false)
-  }
 
-  const getRoleBadgeColor = (role: User['role']) => {
-    switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800'
-      case 'driver': return 'bg-blue-100 text-blue-800'
-      case 'student': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
+    setIsLoading(false);
+    setIsModalOpen(false);
+  };
 
-  const getRoleIcon = (role: User['role']) => {
+  const getRoleBadgeColor = (role: User["role"]) => {
     switch (role) {
-      case 'admin': return '👨‍💼'
-      case 'driver': return '🚐'
-      case 'student': return '🎓'
-      default: return '👤'
+      case "admin":
+        return "bg-red-100 text-red-800";
+      case "driver":
+        return "bg-blue-100 text-blue-800";
+      case "student":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto p-6">
@@ -156,8 +161,9 @@ export default function AdminPage() {
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        
+
         <select
+          title="Filter by role"
           value={filterRole}
           onChange={(e) => setFilterRole(e.target.value)}
           className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -175,7 +181,7 @@ export default function AdminPage() {
           <Plus className="w-5 h-5" />
           เพิ่มผู้ใช้
         </button>
-        
+
         <button
           onClick={() => handleManagePermissions()}
           className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -192,11 +198,21 @@ export default function AdminPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">ชื่อ</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">อีเมล</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">บทบาท</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">วันที่สร้าง</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">จัดการ</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+                  ชื่อ
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+                  อีเมล
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+                  บทบาท
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+                  วันที่สร้าง
+                </th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">
+                  จัดการ
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -209,12 +225,19 @@ export default function AdminPage() {
                     {user.email}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
-                      {user.role === 'admin' ? 'ผู้ดูแลระบบ' : 
-                       user.role === 'student' ? 'นักศึกษา' : 'คนขับรถ'}
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(
+                        user.role
+                      )}`}
+                    >
+                      {user.role === "admin"
+                        ? "ผู้ดูแลระบบ"
+                        : user.role === "student"
+                        ? "นักศึกษา"
+                        : "คนขับรถ"}
                     </span>
                   </td>
-                
+
                   <td className="px-6 py-4 text-sm text-gray-600">
                     {user.createdAt}
                   </td>
@@ -227,7 +250,7 @@ export default function AdminPage() {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                     
+
                       <button
                         onClick={() => handleDeleteUser(user.id)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -254,11 +277,11 @@ export default function AdminPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop with blur */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200"
             onClick={() => !isLoading && setIsModalOpen(false)}
           />
-          
+
           {/* Modal */}
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 slide-in-from-bottom-4 duration-200">
             {/* Header with gradient */}
@@ -274,14 +297,18 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white">
-                      {editingUser ? 'แก้ไขผู้ใช้' : 'เพิ่มผู้ใช้ใหม่'}
+                      {editingUser ? "แก้ไขผู้ใช้" : "เพิ่มผู้ใช้ใหม่"}
                     </h2>
                     <p className="text-red-100 text-sm">
-                      {editingUser ? 'อัปเดตข้อมูลผู้ใช้งาน' : 'กรอกข้อมูลผู้ใช้ใหม่'}
+                      {editingUser
+                        ? "อัปเดตข้อมูลผู้ใช้งาน"
+                        : "กรอกข้อมูลผู้ใช้ใหม่"}
                     </p>
                   </div>
                 </div>
                 <button
+                  type="button"
+                  title="Close modal"
                   onClick={() => !isLoading && setIsModalOpen(false)}
                   disabled={isLoading}
                   className="p-2 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
@@ -290,7 +317,7 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
-            
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {/* Name Field */}
@@ -303,7 +330,9 @@ export default function AdminPage() {
                   required
                   disabled={isLoading}
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-0 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
                   placeholder="กรุณากรอกชื่อผู้ใช้"
                 />
@@ -319,7 +348,9 @@ export default function AdminPage() {
                   required
                   disabled={isLoading}
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-0 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed"
                   placeholder="example@mut.ac.th"
                 />
@@ -332,9 +363,15 @@ export default function AdminPage() {
                 </label>
                 <div className="relative">
                   <select
+                    title="Select user role"
                     value={formData.role}
                     disabled={isLoading}
-                    onChange={(e) => setFormData({...formData, role: e.target.value as User['role']})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        role: e.target.value as User["role"],
+                      })
+                    }
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:ring-0 transition-colors disabled:bg-gray-50 disabled:cursor-not-allowed appearance-none bg-white"
                   >
                     <option value="student">🎓 นักศึกษา</option>
@@ -365,9 +402,7 @@ export default function AdminPage() {
                       กำลังบันทึก...
                     </>
                   ) : (
-                    <>
-                      {editingUser ? 'บันทึกการเปลี่ยนแปลง' : 'เพิ่มผู้ใช้'}
-                    </>
+                    <>{editingUser ? "บันทึกการเปลี่ยนแปลง" : "เพิ่มผู้ใช้"}</>
                   )}
                 </button>
               </div>
@@ -376,5 +411,5 @@ export default function AdminPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

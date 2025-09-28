@@ -57,7 +57,7 @@ function MiniBookingCard({
               <ButtonWithIcon
                 name="Manage booking"
                 icon={<MonitorCog />}
-                classname="bg-red-500 text-white cursor-pointer hover:bg-red-600 hover:text-white"
+                className="bg-red-500 text-white cursor-pointer hover:bg-red-600 hover:text-white"
               />
             </div>
           </CardContent>

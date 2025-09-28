@@ -16,12 +16,17 @@ export default function AppShell({ children }: AppShellProps) {
 
   const info = useUserInformation();
 
-  const authPages = ["/login", "/register", "/forgot-password"];
+  const authPages = [
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/booking/search",
+  ];
   const isAuthPage = authPages.includes(pathname);
 
   if (isAuthPage || !info.user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-200 flex items-center justify-center">
         {children}
       </div>
     );
