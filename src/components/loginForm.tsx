@@ -1,55 +1,55 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, User, Lock } from 'lucide-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, User, Lock } from "lucide-react";
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  
-  const router = useRouter()
+    email: "",
+    password: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
-    }))
+      [name]: value,
+    }));
     // Clear error when user starts typing
-    if (error) setError('')
-  }
+    if (error) setError("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     try {
       // TODO: Replace with actual API call
-      console.log('Login attempt:', formData)
-      
+      console.log("Login attempt:", formData);
+
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // For demo purposes - replace with actual authentication logic
       if (formData.email && formData.password) {
         // Successful login - redirect to dashboard
-        router.push('/dashboard')
+        router.push("/dashboard");
       } else {
-        setError('กรุณากรอกข้อมูลให้ครบถ้วน')
+        setError("กรุณากรอกข้อมูลให้ครบถ้วน");
       }
     } catch (err) {
-      setError('เกิดข้อผิดพลาดในการเข้าสู่ระบบ')
+      setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -60,7 +60,9 @@ export default function LoginForm() {
             <User className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">เข้าสู่ระบบ</h1>
-          <p className="text-gray-600">ระบบรถรับส่ง มหาวิทยาลัยเทคโนโลยีมหานคร</p>
+          <p className="text-gray-600">
+            ระบบรถรับส่ง มหาวิทยาลัยเทคโนโลยีมหานคร
+          </p>
         </div>
 
         {/* Error Message */}
@@ -74,7 +76,10 @@ export default function LoginForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email Field */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               อีเมล
             </label>
             <div className="relative">
@@ -96,7 +101,10 @@ export default function LoginForm() {
 
           {/* Password Field */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               รหัสผ่าน
             </label>
             <div className="relative">
@@ -106,7 +114,7 @@ export default function LoginForm() {
               <input
                 id="password"
                 name="password"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 required
                 value={formData.password}
                 onChange={handleChange}
@@ -136,7 +144,10 @@ export default function LoginForm() {
                 type="checkbox"
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block text-sm text-gray-700"
+              >
                 จำฉันไว้
               </label>
             </div>
@@ -152,36 +163,39 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={isLoading}
+            onClick={() => router.push("/")}
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-red-800 to-red-400 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
             {isLoading ? (
               <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 กำลังเข้าสู่ระบบ...
               </>
             ) : (
-              'เข้าสู่ระบบ'
+              "เข้าสู่ระบบ"
             )}
           </button>
         </form>
-
-        {/* Footer */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            ยังไม่มีบัญชี?{' '}
-            <button
-              type="button"
-              onClick={() => router.push('/register')}
-              className="font-medium text-red-600 hover:text-red-500 transition-colors"
-            >
-              สมัครสมาชิก
-            </button>
-          </p>
-        </div>
       </div>
     </div>
-  )
+  );
 }

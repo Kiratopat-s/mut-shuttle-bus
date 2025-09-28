@@ -20,16 +20,14 @@ export default function Home() {
   };
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col items-center w-full p-2 gap-12">
       <QrPassanger isOpen={qrModalOpen} onClose={handleCloseQrModal} />
       {/* body */}
-      <div className="flex flex-col h-[80vh] gap-12">
-        <div className="p-2 bg-red-900 rounded-xl w-full max-w-lg">
-          <CarouselCheckIn onOpenQrModal={handleOpenQrModal} />
-        </div>
-        <HomeMainMenu />
+      <div className="p-2 bg-red-900 rounded-xl w-full max-w-lg">
+        <CarouselCheckIn onOpenQrModal={handleOpenQrModal} />
       </div>
+      <HomeMainMenu />
       {/* end body */}
-    </>
+    </div>
   );
 }
