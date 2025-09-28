@@ -33,7 +33,7 @@ export default function UserProvider({
 
   const fetchUser = async () => {
     try {
-      const res = await fetch("/api/user", {
+      const res = await fetch("/api/secure/user/information", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

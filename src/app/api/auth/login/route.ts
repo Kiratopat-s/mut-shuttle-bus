@@ -11,43 +11,6 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface UserPayload {
-  email: string;
-  password: string;
-  userId: number;
-  roleId: number;
-  employeeId: number | null;
-  firstName: string;
-  lastName: string;
-  createdAt: Date;
-  updatedAt: Date;
-  role: {
-    roleId: number;
-    createdAt: Date;
-    updatedAt: Date;
-    roleName: string;
-  };
-  employee: {
-    employeeId: number;
-    createdAt: Date;
-    updatedAt: Date;
-    departmentId: number | null;
-    position: string;
-  } | null;
-}
-
-export const validateAccessToken = (token: string) => {
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-    if (typeof decoded === "string" || decoded === null) return null;
-    const user = decoded as UserPayload;
-    return user;
-  } catch (error) {
-    console.error("Invalid token:", error);
-    return null;
-  }
-};
-
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const { email, password }: LoginRequest = await req.json();
   if (!email || !password) {
@@ -61,6 +24,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const user = await prisma.user.findFirst({
     where: { email, password: encryptedPassword },
     include: { role: true, employee: true },
+    omit: { password: true },
   });
 
   if (!user) {

@@ -1,13 +1,19 @@
+import { PrismaClient } from "@/generated/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { validateAccessToken } from "../auth/login/route";
+
+const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
-  const cookie = req.cookies.get("accessToken");
-  if (!cookie) {
+  const userId = req.headers.get("X-User-Id");
+  if (!userId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const user = validateAccessToken(cookie.value);
+  const user = await prisma.user.findUnique({
+    where: { userId: Number(userId) },
+    include: { role: true, employee: true },
+    omit: { password: true },
+  });
 
   if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
