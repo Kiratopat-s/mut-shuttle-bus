@@ -1,5 +1,8 @@
 import { Base64 } from "js-base64";
 import { PrismaClient } from "../../../../../generated/prismaprisma/client";
+import jwt from "jsonwebtoken";
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 const prisma = new PrismaClient();
 
@@ -8,34 +11,55 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-}
-
-export async function POST(req: Request): Promise<Response> {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   const { email, password }: LoginRequest = await req.json();
   if (!email || !password) {
-    return new Response("Invalid request", { status: 400 });
+    return new NextResponse(JSON.stringify({ message: "Invalid request" }), {
+      status: 400,
+    });
   }
 
   const encryptedPassword = Base64.encode(password);
 
-  console.log("Encrypted Password:", encryptedPassword);
-
   const user = await prisma.user.findFirst({
     where: { email, password: encryptedPassword },
+    include: { role: true, employee: true },
   });
 
   if (!user) {
-    return new Response("Invalid email or password", { status: 401 });
+    return new NextResponse(
+      JSON.stringify({ message: "Invalid email or password" }),
+      {
+        status: 401,
+      }
+    );
   }
 
-  const accessToken = "some-access-token";
-  const refreshToken = "some-refresh-token";
+  const accessToken = jwt.sign(user, process.env.JWT_SECRET as string, {
+    expiresIn: "15m",
+  });
 
-  return new Response(JSON.stringify({ accessToken, refreshToken }), {
+  const refreshToken = jwt.sign(user, process.env.JWT_SECRET as string, {
+    expiresIn: "7d",
+  });
+
+  const cookie = await cookies();
+
+  cookie.set({
+    name: "accessToken",
+    value: accessToken,
+    httpOnly: true,
+    sameSite: "strict",
+  });
+
+  cookie.set({
+    name: "refreshToken",
+    value: refreshToken,
+    httpOnly: true,
+    sameSite: "strict",
+  });
+
+  return new NextResponse(JSON.stringify({ message: "Login successful" }), {
     status: 200,
-    headers: { "Content-Type": "application/json" },
   });
 }
