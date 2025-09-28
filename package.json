@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "devs": "next dev --turbopack --experimental-https",
+    "devs-local": "next dev -H local.mut-shuttle-bus.com -p 443 --turbopack --experimental-https",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"

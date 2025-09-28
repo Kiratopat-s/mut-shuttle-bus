@@ -9,6 +9,7 @@ export default function LoginForm() {
     email: "",
     password: "",
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -44,7 +45,7 @@ export default function LoginForm() {
         throw new Error(data.message || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ");
       }
 
-      router.push("/dashboard");
+      window.location.href = "/";
     } catch (err) {
       setError(`เกิดข้อผิดพลาดในการเข้าสู่ระบบ`);
       console.error("Login error:", err);

@@ -10,11 +10,13 @@ export type UserInformation = Omit<User, "employeeId"> & {
 
 interface UserContext {
   user: UserInformation | null;
+  isLoading: boolean;
   clearUser: () => void;
 }
 
 const UserContext = createContext<UserContext>({
   user: null,
+  isLoading: true,
   clearUser: () => {},
 });
 
@@ -26,12 +28,14 @@ export default function UserProvider({
   children: React.ReactNode;
 }) {
   const [user, setUser] = useState<UserInformation | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchUser();
   }, []);
 
   const fetchUser = async () => {
+    setIsLoading(true);
     try {
       const res = await fetch("/api/secure/user/information", {
         method: "GET",
@@ -48,13 +52,15 @@ export default function UserProvider({
     } catch (error) {
       void error;
       setUser(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const clearUser = () => setUser(null);
 
   return (
-    <UserContext.Provider value={{ user, clearUser }}>
+    <UserContext.Provider value={{ user, isLoading, clearUser }}>
       {children}
     </UserContext.Provider>
   );

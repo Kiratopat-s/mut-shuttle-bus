@@ -53,7 +53,7 @@ UpperProps) {
             className="bg-red-500 text-white hover:bg-red-600"
             icon={<LogOut />}
             onclick={() => {
-              router.push("/login");
+              router.push("/auth/logout");
             }}
           />
         </div>
