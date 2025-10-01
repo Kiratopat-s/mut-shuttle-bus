@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import Footer from "@/components/footer";
 import { Upper } from "@/components/upper";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { UpperSkeleton, LoadingSkeleton } from "@/components/skeletons";
 import { UserInformation, useUserInformation } from "@/provider/UserProvider";
 import Loading from "./loading/Loading";
@@ -56,18 +56,14 @@ export default function AppShell({ children }: AppShellProps) {
     return <Loading title="Loading..." />;
   }
 
+  useEffect(() => {
+    if (!user && !isLoading) {
+      router.push("/auth/login");
+    }
+  }, [user, isLoading, router]);
+
   if (!user) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-between p-4 gap-4">
-        <Suspense fallback={<UpperSkeleton />}>
-          <Upper user={MockUser} />
-        </Suspense>
-        <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
-        <Footer />
-      </div>
-    );
-    // router.push("/auth/login");
-    // return null;
+    return <Loading title="Redirecting..." />;
   }
 
   return (

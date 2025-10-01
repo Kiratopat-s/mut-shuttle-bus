@@ -3,10 +3,13 @@
 import { Suspense } from "react";
 import { CarouselCheckIn } from "@/components/carouselCheckIn";
 import HomeMainMenu from "@/components/homeMainMenu";
+import HomeMainMenuDriver from "@/components/homeMainMenuDriver";
 import QrPassanger from "@/components/modals/qrPassangerModal";
 import { useQueryState, parseAsBoolean } from "nuqs";
+import { useUserInformation } from "@/provider/UserProvider";
 
 function HomeContent() {
+  const { user } = useUserInformation();
   const [qrModalOpen, setQrModalOpen] = useQueryState(
     "qr",
     parseAsBoolean.withDefault(false)
@@ -20,13 +23,20 @@ function HomeContent() {
     setQrModalOpen(false);
   };
 
+  const isDriver = user?.role.roleName === "driver";
+
   return (
     <div className="flex min-h-screen flex-col items-center w-full p-2 gap-12">
       <QrPassanger isOpen={qrModalOpen} onClose={handleCloseQrModal} />
-      <div className="p-2 bg-red-900 rounded-xl w-full max-w-sm">
-        <CarouselCheckIn onOpenQrModal={handleOpenQrModal} />
-      </div>
-      <HomeMainMenu />
+
+      {/* แสดง CarouselCheckIn เฉพาะผู้ใช้ที่ไม่ใช่ driver */}
+      {!isDriver && (
+        <div className="p-2 bg-red-900 rounded-xl w-full max-w-lg">
+          <CarouselCheckIn onOpenQrModal={handleOpenQrModal} />
+        </div>
+      )}
+      {/* แสดงเมนูตาม role */}
+      {isDriver ? <HomeMainMenuDriver /> : <HomeMainMenu />}
     </div>
   );
 }
