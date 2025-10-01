@@ -4,7 +4,7 @@ export function HomePageSkeleton() {
   return (
     <div className="flex flex-col h-[80vh] gap-12">
       {/* Carousel skeleton - matches CarouselCheckIn */}
-      <div className="p-2 bg-red-900 rounded-xl w-full max-w-lg">
+      <div className="p-2 bg-red-900 rounded-xl w-full max-w-sm">
         <div className="space-y-3 p-4">
           {/* Mini booking card skeleton */}
           <div className="bg-white rounded-lg p-4 space-y-3">

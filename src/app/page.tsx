@@ -23,7 +23,7 @@ function HomeContent() {
   return (
     <div className="flex min-h-screen flex-col items-center w-full p-2 gap-12">
       <QrPassanger isOpen={qrModalOpen} onClose={handleCloseQrModal} />
-      <div className="p-2 bg-red-900 rounded-xl w-full max-w-lg">
+      <div className="p-2 bg-red-900 rounded-xl w-full max-w-sm">
         <CarouselCheckIn onOpenQrModal={handleOpenQrModal} />
       </div>
       <HomeMainMenu />

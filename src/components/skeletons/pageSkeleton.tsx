@@ -25,7 +25,7 @@ function HomeVariant() {
   return (
     <div className="flex flex-col h-[80vh] gap-12">
       {/* Carousel skeleton */}
-      <div className="p-2 bg-red-900 rounded-xl w-full max-w-lg">
+      <div className="p-2 bg-red-900 rounded-xl w-full max-w-sm">
         <div className="space-y-3 p-4">
           <div className="bg-white rounded-lg p-4 space-y-3">
             <div className="flex justify-between items-center">
