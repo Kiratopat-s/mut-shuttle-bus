@@ -5,7 +5,7 @@ import Footer from "@/components/footer";
 import { Upper } from "@/components/upper";
 import { Suspense } from "react";
 import { UpperSkeleton, LoadingSkeleton } from "@/components/skeletons";
-import { useUserInformation } from "@/provider/UserProvider";
+import { UserInformation, useUserInformation } from "@/provider/UserProvider";
 import Loading from "./loading/Loading";
 
 interface AppShellProps {
@@ -17,12 +17,30 @@ export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
 
   const { user, isLoading } = useUserInformation();
+  const MockUser: UserInformation = {
+    userId: 1,
+    roleId: 1,
+    firstName: "John",
+    lastName: "Doe",
+    email: "john@gmail.com",
+    password: "hashedpassword",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    role: {
+      roleId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      roleName: "User",
+    },
+    employee: null,
+  };
 
   const authPages = [
     "/auth/login",
     "/auth/register",
     "/auth/forgot-password",
     "/booking/search",
+    "/booking/guest-details",
   ];
   const isAuthPage = authPages.includes(pathname);
 
@@ -39,8 +57,17 @@ export default function AppShell({ children }: AppShellProps) {
   }
 
   if (!user) {
-    router.push("/auth/login");
-    return null;
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-between p-4 gap-4">
+        <Suspense fallback={<UpperSkeleton />}>
+          <Upper user={MockUser} />
+        </Suspense>
+        <Suspense fallback={<LoadingSkeleton />}>{children}</Suspense>
+        <Footer />
+      </div>
+    );
+    // router.push("/auth/login");
+    // return null;
   }
 
   return (

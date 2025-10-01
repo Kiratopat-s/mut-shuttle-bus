@@ -20,10 +20,11 @@ export interface Trip {
 
 interface TripCardProps {
   trip: Trip;
+  wantedSeat: number;
   onBook?: (trip: Trip) => void;
 }
 
-export function TripCard({ trip, onBook }: TripCardProps) {
+export function TripCard({ trip, onBook, wantedSeat }: TripCardProps) {
   const handleBookClick = () => {
     onBook?.(trip);
   };
@@ -40,6 +41,9 @@ export function TripCard({ trip, onBook }: TripCardProps) {
     if (seatPercentage > 20) return "bg-yellow-50 border-yellow-200";
     return "bg-red-50 border-red-200";
   };
+
+  const isDisabledBook =
+    trip.available_seat === 0 || trip.available_seat < wantedSeat;
 
   return (
     <Card className="group hover:shadow-md transition-all duration-200 border-l-4 border-l-red-700">
@@ -72,9 +76,13 @@ export function TripCard({ trip, onBook }: TripCardProps) {
             <Button
               className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
               onClick={handleBookClick}
-              disabled={trip.available_seat === 0}
+              disabled={isDisabledBook}
             >
-              {trip.available_seat === 0 ? "Full" : "Book"}
+              {trip.available_seat === 0
+                ? "Full"
+                : trip.available_seat < wantedSeat
+                ? "Not enough seat"
+                : "Book now"}
             </Button>
           </div>
 
@@ -150,9 +158,13 @@ export function TripCard({ trip, onBook }: TripCardProps) {
               <Button
                 className="bg-red-700 hover:bg-red-800 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                 onClick={handleBookClick}
-                disabled={trip.available_seat === 0}
+                disabled={isDisabledBook}
               >
-                {trip.available_seat === 0 ? "Full" : "Book"}
+                {trip.available_seat === 0
+                  ? "Full"
+                  : trip.available_seat < wantedSeat
+                  ? "Not enough seat"
+                  : "Book now"}
               </Button>
             </div>
           </div>
@@ -193,12 +205,18 @@ export function NoTripsFound() {
 }
 
 interface TripCardListProps {
+  wantedSeat: number;
   trips: Trip[];
   onBook?: (trip: Trip) => void;
   className?: string;
 }
 
-export function TripCardList({ trips, onBook, className }: TripCardListProps) {
+export function TripCardList({
+  trips,
+  onBook,
+  className,
+  wantedSeat,
+}: TripCardListProps) {
   return (
     <div className={`space-y-4 ${className || ""}`}>
       {trips.length > 0 ? (
@@ -207,6 +225,7 @@ export function TripCardList({ trips, onBook, className }: TripCardListProps) {
             key={trip.vehicleRouteScheduleId}
             trip={trip}
             onBook={onBook}
+            wantedSeat={wantedSeat}
           />
         ))
       ) : (

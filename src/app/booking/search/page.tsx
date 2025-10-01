@@ -13,11 +13,11 @@ import {
 } from "@/components/ui/select";
 import { TripCardList, type Trip } from "@/components/tripCard";
 
-interface BookingInfoFromAPI {
+export interface BookingInfoFromAPI {
   date: Date;
   origin: string;
   destination: string;
-  guests: string;
+  guests: number;
   vehicle: string;
 }
 
@@ -31,7 +31,7 @@ function SearchPageContent() {
     date: new Date("2025-09-28T09:28:04.297Z"),
     origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
     destination: "Big C หนองจอก",
-    guests: "1",
+    guests: 4,
     vehicle: "All vehicle types",
   };
 
@@ -57,7 +57,7 @@ function SearchPageContent() {
         vehicle_route_start_time: "10:00",
         vehicle_route_end_time: "10:45",
         vehicle_route_duration: "45 min",
-        available_seat: 15,
+        available_seat: 2,
         origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
         destination: "Big C หนองจอก",
       },
@@ -205,7 +205,9 @@ function SearchPageContent() {
   }, [MockMatchTrip, sortBy]);
 
   const handleBookTrip = (trip: Trip) => {
-    console.log("Booking trip:", trip);
+    router.push(
+      `/booking/guest-details?tripId=${trip.vehicleRouteScheduleId}&guests=${MockBookingInfoFromAPI.guests}`
+    );
   };
 
   const handleSortChange = (value: string) => {
@@ -258,7 +260,7 @@ function SearchPageContent() {
               <span>•</span>
               <span>
                 {MockBookingInfoFromAPI.guests} passenger
-                {MockBookingInfoFromAPI.guests !== "1" ? "s" : ""}
+                {MockBookingInfoFromAPI.guests > 1 ? "s" : ""}
               </span>
             </div>
           </div>
@@ -324,7 +326,7 @@ function SearchPageContent() {
               </p>
               <p className="text-sm font-medium text-gray-900">
                 {MockBookingInfoFromAPI.guests} passenger
-                {MockBookingInfoFromAPI.guests !== "1" ? "s" : ""}
+                {MockBookingInfoFromAPI.guests > 1 ? "s" : ""}
               </p>
             </div>
 
@@ -373,7 +375,11 @@ function SearchPageContent() {
           </div>
         </div>
 
-        <TripCardList trips={sortedTrips} onBook={handleBookTrip} />
+        <TripCardList
+          wantedSeat={MockBookingInfoFromAPI.guests}
+          trips={sortedTrips}
+          onBook={handleBookTrip}
+        />
       </div>
     </main>
   );

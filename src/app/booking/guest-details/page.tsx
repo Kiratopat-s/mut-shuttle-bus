@@ -1,0 +1,781 @@
+"use client";
+import Loading from "@/components/loading/Loading";
+import { Suspense, useState, useCallback } from "react";
+import { useQueryState } from "nuqs";
+import {
+  ChevronLeft,
+  Car,
+  User,
+  Check,
+  Plus,
+  Minus,
+  UserCheck,
+  AlertCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trip } from "@/components/tripCard";
+import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { z } from "zod";
+
+// Zod schema for guest form validation
+const GuestFormSchema = z.object({
+  email: z.email(),
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .min(2, "First name must be at least 2 characters")
+    .max(50, "First name must be less than 50 characters")
+    .regex(
+      /^[a-zA-Zก-๙\s]+$/,
+      "First name can only contain letters and spaces"
+    ),
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .min(2, "Last name must be at least 2 characters")
+    .max(50, "Last name must be less than 50 characters")
+    .regex(/^[a-zA-Zก-๙\s]+$/, "Last name can only contain letters and spaces"),
+  phoneNumber: z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(/^[0-9]{10}$/, "Phone number must be exactly 10 digits"),
+});
+
+type GuestForm = z.infer<typeof GuestFormSchema>;
+type GuestFormErrors = Partial<Record<keyof GuestForm, string>>;
+type AllGuestErrors = GuestFormErrors[];
+
+// will be push from another page router.push(
+//   `/booking/guest-details?tripId=${trip.vehicleRouteScheduleId}&guests=${MockChoosenTrip.guests}`
+// );
+
+function GuestDetailsPageContent() {
+  const router = useRouter();
+  const [tripId] = useQueryState("tripId");
+  const [guests, setGuests] = useQueryState("guests");
+
+  const rawTripId = Array.isArray(tripId) ? tripId[0] : tripId;
+  const rawGuests = Array.isArray(guests) ? guests[0] : guests;
+  const initialGuestsNum = guests ? parseInt(rawGuests as string, 10) : 1;
+
+  const [guestForms, setGuestForms] = useState<GuestForm[]>(() =>
+    Array.from({ length: initialGuestsNum }, () => ({
+      email: "",
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
+    }))
+  );
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<AllGuestErrors>([]);
+
+  // Real-time validation function for a single field
+  const validateField = useCallback(
+    (guestData: GuestForm, field: keyof GuestForm): string | null => {
+      try {
+        // Validate only the specific field
+        const fieldSchema = GuestFormSchema.shape[field];
+        fieldSchema.parse(guestData[field]);
+        return null; // No error
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return error.issues[0]?.message || "Invalid input";
+        }
+        return "Invalid input";
+      }
+    },
+    []
+  );
+
+  const updateGuestForm = useCallback(
+    (index: number, field: keyof GuestForm, value: string) => {
+      setGuestForms((prev) => {
+        const newForms = prev.map((guest, i) =>
+          i === index ? { ...guest, [field]: value } : guest
+        );
+
+        // Perform real-time validation on the updated guest
+        const updatedGuest = newForms[index];
+        const fieldError = validateField(updatedGuest, field);
+
+        // Update validation errors
+        setValidationErrors((prevErrors) => {
+          const newErrors = [...prevErrors];
+          if (!newErrors[index]) {
+            newErrors[index] = {};
+          }
+
+          if (fieldError) {
+            newErrors[index][field] = fieldError;
+          } else {
+            delete newErrors[index][field];
+          }
+
+          return newErrors;
+        });
+
+        return newForms;
+      });
+    },
+    [validateField]
+  );
+
+  const validateAllGuestForms = useCallback(() => {
+    const errors: AllGuestErrors = [];
+    let hasErrors = false;
+
+    guestForms.forEach((guest, index) => {
+      const result = GuestFormSchema.safeParse(guest);
+      if (!result.success) {
+        const fieldErrors: GuestFormErrors = {};
+        result.error.issues.forEach((issue) => {
+          const field = issue.path[0] as keyof GuestForm;
+          fieldErrors[field] = issue.message;
+        });
+        errors[index] = fieldErrors;
+        hasErrors = true;
+      } else {
+        errors[index] = {};
+      }
+    });
+
+    setValidationErrors(errors);
+    return !hasErrors;
+  }, [guestForms]);
+
+  const validateSingleGuest = useCallback(
+    (index: number) => {
+      const guest = guestForms[index];
+      const result = GuestFormSchema.safeParse(guest);
+
+      if (!result.success) {
+        const fieldErrors: GuestFormErrors = {};
+        result.error.issues.forEach((issue) => {
+          const field = issue.path[0] as keyof GuestForm;
+          fieldErrors[field] = issue.message;
+        });
+
+        setValidationErrors((prev) => {
+          const newErrors = [...prev];
+          newErrors[index] = fieldErrors;
+          return newErrors;
+        });
+        return false;
+      } else {
+        setValidationErrors((prev) => {
+          const newErrors = [...prev];
+          newErrors[index] = {};
+          return newErrors;
+        });
+        return true;
+      }
+    },
+    [guestForms]
+  );
+
+  // Real-time check if all forms are valid
+  const isAllFormsValid = useCallback(() => {
+    return guestForms.every((guest, index) => {
+      const result = GuestFormSchema.safeParse(guest);
+      return (
+        result.success &&
+        (!validationErrors[index] ||
+          Object.keys(validationErrors[index]).length === 0)
+      );
+    });
+  }, [guestForms, validationErrors]);
+
+  const MockChoosenTrip: Trip = {
+    vehicleRouteScheduleId: "1",
+    vehicle_license_plate: "ป้ายทะเบียน 1",
+    vehicle_type: "Minibus",
+    vehicle_seat: 25,
+    vehicle_route_start_time: "09:30",
+    vehicle_route_end_time: "10:15",
+    vehicle_route_duration: "45 min",
+    available_seat: 25,
+    origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
+    destination: "Big C หนองจอก",
+  };
+  const fillMyInfo = useCallback(() => {
+    const currentUserData = {
+      email: "john.doe@example.com",
+      firstName: "John",
+      lastName: "Doe",
+      phoneNumber: "0812345678",
+    };
+    setGuestForms((prev) =>
+      prev.map((guest, i) => (i === 0 ? { ...currentUserData } : guest))
+    );
+  }, []);
+
+  const autoFillFromEmail = useCallback(
+    async (email: string, guestIndex: number) => {
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+
+      // Mock API call to get user data by email
+      // In real app, replace with actual API call
+      const mockUserDatabase = [
+        {
+          email: "jane.smith@example.com",
+          firstName: "Jane",
+          lastName: "Smith",
+          phoneNumber: "0823456789",
+        },
+        {
+          email: "alice.wong@example.com",
+          firstName: "Alice",
+          lastName: "Wong",
+          phoneNumber: "0834567890",
+        },
+        {
+          email: "bob.wilson@example.com",
+          firstName: "Bob",
+          lastName: "Wilson",
+          phoneNumber: "0845678901",
+        },
+      ];
+
+      const userData = mockUserDatabase.find((user) => user.email === email);
+      if (userData) {
+        setGuestForms((prev) =>
+          prev.map((guest, i) =>
+            i === guestIndex ? { ...guest, ...userData } : guest
+          )
+        );
+      }
+    },
+    []
+  );
+
+  const currentGuestsNum = guestForms.length;
+  const maxGuests = Math.min(4, MockChoosenTrip.available_seat);
+
+  const addGuest = useCallback(() => {
+    if (currentGuestsNum < maxGuests) {
+      setGuestForms((prev) => [
+        ...prev,
+        { email: "", firstName: "", lastName: "", phoneNumber: "" },
+      ]);
+      setValidationErrors((prev) => [...prev, {}]);
+      setGuests((currentGuestsNum + 1).toString());
+    }
+  }, [currentGuestsNum, maxGuests, setGuests]);
+
+  const removeGuest = useCallback(() => {
+    if (currentGuestsNum > 1) {
+      setGuestForms((prev) => prev.slice(0, -1));
+      setValidationErrors((prev) => prev.slice(0, -1));
+      setGuests((currentGuestsNum - 1).toString());
+    }
+  }, [currentGuestsNum, setGuests]);
+
+  if (!tripId || !guests) {
+    router.push("/booking/search");
+    return null;
+  }
+
+  const handleSubmit = async () => {
+    if (!validateAllGuestForms()) {
+      const errorSummary: string[] = [];
+      validationErrors.forEach((guestErrors, index) => {
+        Object.entries(guestErrors).forEach(([field, message]) => {
+          errorSummary.push(`Guest ${index + 1} - ${field}: ${message}`);
+        });
+      });
+      return;
+    }
+
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setIsSubmitting(true);
+
+    // Prepare booking data for API
+    const bookingData = {
+      tripId: rawTripId,
+      guests: guestForms,
+      vehicleRouteScheduleId: MockChoosenTrip.vehicleRouteScheduleId,
+    };
+
+    try {
+      // Here you would make the API call to submit the booking
+      console.log("Submitting booking data:", bookingData);
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Navigate to confirmation page or show success message
+      router.push(
+        `/booking/result-confirmation?bookingId=BMT-2024-${Date.now()}&status=success`
+      );
+    } catch (error) {
+      console.error("Error submitting booking:", error);
+      // Navigate to error result page
+      router.push(
+        `/booking/result-confirmation?status=error&errorCode=BOOKING_FAILED`
+      );
+    } finally {
+      setIsSubmitting(false);
+      setShowConfirmDialog(false);
+    }
+  };
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-start">
+      <GuestDetailsHeader />
+      <TripInfoHeadBar trip={MockChoosenTrip} />
+
+      <div className="w-full max-w-6xl mx-auto p-4 bg-white rounded-b-2xl shadow">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">
+            Guest Information ({currentGuestsNum}{" "}
+            {currentGuestsNum === 1 ? "Guest" : "Guests"})
+          </h3>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={removeGuest}
+              disabled={currentGuestsNum <= 1}
+              className="px-3"
+            >
+              <Minus className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addGuest}
+              disabled={currentGuestsNum >= maxGuests}
+              className="px-3"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+            <span className="text-sm text-gray-500 ml-2">Max: {maxGuests}</span>
+          </div>
+        </div>
+
+        <Accordion
+          type="multiple"
+          className="w-full"
+          defaultValue={guestForms.map((_, index) => `guest-${index + 1}`)}
+        >
+          {guestForms.map((guest, index) => (
+            <GuestFormAccordion
+              key={index}
+              guestNumber={index + 1}
+              guestForm={guest}
+              errors={validationErrors[index] || {}}
+              onUpdate={(field: keyof GuestForm, value: string) =>
+                updateGuestForm(index, field, value)
+              }
+              onEmailChange={(email) => autoFillFromEmail(email, index)}
+              onFillMyInfo={index === 0 ? fillMyInfo : undefined}
+              onBlur={() => validateSingleGuest(index)}
+            />
+          ))}
+        </Accordion>
+
+        <div className="mt-8 flex justify-end">
+          <Button
+            onClick={handleSubmit}
+            disabled={guestForms.length === 0 || !isAllFormsValid()}
+            className="px-8 py-2"
+          >
+            Continue to Confirmation
+          </Button>
+        </div>
+      </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Check className="w-5 h-5 text-green-600" />
+              Confirm Booking Details
+            </DialogTitle>
+            <DialogDescription>
+              Please review your booking information before proceeding.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Trip Summary */}
+            <div className="border rounded-lg p-4">
+              <h4 className="font-medium mb-2">Trip Details</h4>
+              <div className="text-sm text-gray-600 space-y-1">
+                <div>
+                  {MockChoosenTrip.origin} → {MockChoosenTrip.destination}
+                </div>
+                <div>
+                  {MockChoosenTrip.vehicle_route_start_time} —{" "}
+                  {MockChoosenTrip.vehicle_route_end_time}
+                </div>
+                <div>
+                  {MockChoosenTrip.vehicle_type} •{" "}
+                  {MockChoosenTrip.vehicle_license_plate}
+                </div>
+              </div>
+            </div>
+
+            {/* Guests Summary */}
+            <div className="border rounded-lg p-4">
+              <h4 className="font-medium mb-2">Passenger Information</h4>
+              <div className="space-y-2">
+                {guestForms.map((guest, index) => (
+                  <div
+                    key={index}
+                    className="text-sm border-l-2 border-gray-200 pl-3"
+                  >
+                    <div className="font-medium">
+                      Guest {index + 1}: {guest.firstName} {guest.lastName}
+                    </div>
+                    <div className="text-gray-600">
+                      {guest.email} • {guest.phoneNumber}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+              disabled={isSubmitting}
+            >
+              Review Details
+            </Button>
+            <Button
+              onClick={handleConfirmSubmit}
+              disabled={isSubmitting}
+              className="px-6"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Processing...
+                </>
+              ) : (
+                "Confirm Booking"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </main>
+  );
+}
+
+function GuestDetailsHeader() {
+  const router = useRouter();
+  return (
+    <>
+      <div className="sticky top-0 left-0 w-screen flex flex-row items-center justify-start bg-white z-[100] border-b border-gray-200 shadow-sm">
+        <div className="flex md:hidden w-full p-2 gap-2 items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            className="flex-shrink-0 w-8 h-8"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          <h2>Guest details</h2>
+        </div>
+      </div>
+
+      <div className="hidden md:flex w-full p-4 gap-4 items-center max-w-6xl mx-auto">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.back()}
+          className="flex-shrink-0"
+          aria-label="Go back"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </Button>
+        <h2>Guest details</h2>
+      </div>
+    </>
+  );
+}
+
+function GuestFormAccordion({
+  guestNumber,
+  guestForm,
+  errors,
+  onUpdate,
+  onEmailChange,
+  onFillMyInfo,
+  onBlur,
+}: {
+  guestNumber: number;
+  guestForm: GuestForm;
+  errors: GuestFormErrors;
+  onUpdate: (field: keyof GuestForm, value: string) => void;
+  onEmailChange?: (email: string) => void;
+  onFillMyInfo?: () => void;
+  onBlur?: () => void;
+}) {
+  const hasErrors = Object.keys(errors).length > 0;
+  const isComplete =
+    guestForm.email &&
+    guestForm.firstName &&
+    guestForm.lastName &&
+    guestForm.phoneNumber &&
+    !hasErrors;
+
+  const handleEmailChange = (email: string) => {
+    onUpdate("email", email);
+    if (onEmailChange) {
+      onEmailChange(email);
+    }
+  };
+
+  return (
+    <AccordionItem
+      value={`guest-${guestNumber}`}
+      className={`border rounded-lg mb-2 ${
+        hasErrors
+          ? "border-red-200 bg-red-50/30"
+          : isComplete
+          ? "border-green-200 bg-green-50/30"
+          : "border-gray-200"
+      }`}
+    >
+      <AccordionTrigger className="px-4 hover:no-underline">
+        <div className="flex items-center gap-3">
+          <div
+            className={`p-2 rounded-full ${
+              hasErrors
+                ? "bg-red-100"
+                : isComplete
+                ? "bg-green-100"
+                : "bg-gray-100"
+            }`}
+          >
+            {hasErrors ? (
+              <AlertCircle className="w-4 h-4 text-red-600" />
+            ) : isComplete ? (
+              <Check className="w-4 h-4 text-green-600" />
+            ) : (
+              <User className="w-4 h-4 text-gray-600" />
+            )}
+          </div>
+          <div className="text-left">
+            <div className="font-medium">Guest {guestNumber}</div>
+            {isComplete && (
+              <div className="text-sm text-gray-600">
+                {guestForm.firstName} {guestForm.lastName}
+              </div>
+            )}
+          </div>
+        </div>
+      </AccordionTrigger>
+      <AccordionContent className="px-4 pb-4">
+        <div className="space-y-4">
+          {/* Email field at the top */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`email-${guestNumber}`}>Email Address</Label>
+              {onFillMyInfo && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onFillMyInfo}
+                  className="text-xs px-2 py-1 h-auto"
+                >
+                  <UserCheck className="w-3 h-3 mr-1" />
+                  Fill my info
+                </Button>
+              )}
+            </div>
+            <Input
+              id={`email-${guestNumber}`}
+              type="email"
+              placeholder="Enter email address"
+              value={guestForm.email}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              onBlur={onBlur}
+              className={
+                errors.email
+                  ? "border-red-500 focus-visible:border-red-500"
+                  : guestForm.email && !errors.email
+                  ? "border-green-500 focus-visible:border-green-500"
+                  : ""
+              }
+            />
+            {errors.email ? (
+              <div className="flex items-center gap-1 text-sm text-red-600 mt-1">
+                <AlertCircle className="w-3 h-3" />
+                {errors.email}
+              </div>
+            ) : guestForm.email && !errors.email ? (
+              <div className="flex items-center gap-1 text-sm text-green-600 mt-1">
+                <Check className="w-3 h-3" />
+                Valid email address
+              </div>
+            ) : null}
+          </div>
+
+          {/* Other fields in a grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor={`firstName-${guestNumber}`}>First Name</Label>
+              <Input
+                id={`firstName-${guestNumber}`}
+                placeholder="Enter first name"
+                value={guestForm.firstName}
+                onChange={(e) => onUpdate("firstName", e.target.value)}
+                onBlur={onBlur}
+                className={
+                  errors.firstName
+                    ? "border-red-500 focus-visible:border-red-500"
+                    : guestForm.firstName && !errors.firstName
+                    ? "border-green-500 focus-visible:border-green-500"
+                    : ""
+                }
+              />
+              {errors.firstName && (
+                <div className="flex items-center gap-1 text-sm text-red-600 mt-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.firstName}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`lastName-${guestNumber}`}>Last Name</Label>
+              <Input
+                id={`lastName-${guestNumber}`}
+                placeholder="Enter last name"
+                value={guestForm.lastName}
+                onChange={(e) => onUpdate("lastName", e.target.value)}
+                onBlur={onBlur}
+                className={
+                  errors.lastName
+                    ? "border-red-500 focus-visible:border-red-500"
+                    : guestForm.lastName && !errors.lastName
+                    ? "border-green-500 focus-visible:border-green-500"
+                    : ""
+                }
+              />
+              {errors.lastName && (
+                <div className="flex items-center gap-1 text-sm text-red-600 mt-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.lastName}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor={`phone-${guestNumber}`}>Phone Number</Label>
+              <Input
+                id={`phone-${guestNumber}`}
+                placeholder="0812345678"
+                value={guestForm.phoneNumber}
+                onChange={(e) => {
+                  // Only allow numbers and limit to 10 digits
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  onUpdate("phoneNumber", value);
+                }}
+                onBlur={onBlur}
+                className={
+                  errors.phoneNumber
+                    ? "border-red-500 focus-visible:border-red-500"
+                    : guestForm.phoneNumber && !errors.phoneNumber
+                    ? "border-green-500 focus-visible:border-green-500"
+                    : ""
+                }
+              />
+              {errors.phoneNumber && (
+                <div className="flex items-center gap-1 text-sm text-red-600 mt-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.phoneNumber}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  );
+}
+
+function TripInfoHeadBar({ trip }: { trip: Trip }) {
+  return (
+    <div className="w-full p-4 gap-4 items-center max-w-6xl mx-auto border-b border-gray-200">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex items-start md:items-center gap-3">
+          <div className="p-2 bg-red-800 rounded-md">
+            <Car className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex flex-col">
+            <div className="text-sm text-gray-600">
+              {trip.origin} → {trip.destination}
+            </div>
+
+            <div className="text-lg font-semibold text-gray-900">
+              {trip.vehicle_route_start_time} — {trip.vehicle_route_end_time} •{" "}
+              {trip.vehicle_route_duration}
+            </div>
+
+            <div className="text-sm text-gray-600 mt-1">
+              <Badge className=" border border-red-500 text-red-600 bg-transparent ">
+                {trip.vehicle_type}
+              </Badge>
+              <Badge className="ml-2 bg-red-500 text-white">
+                {trip.vehicle_license_plate}
+              </Badge>
+              <Badge className="ml-2 bg-green-600 text-white">
+                {trip.available_seat} seats available
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-start md:items-end text-sm text-gray-600">
+          <span>Schedule ID</span>
+          <span className="text-gray-900 font-medium">
+            {trip.vehicleRouteScheduleId}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Page() {
+  return (
+    <Suspense fallback={<Loading title="Loading..." />}>
+      <GuestDetailsPageContent />
+    </Suspense>
+  );
+}
+
+export default Page;
