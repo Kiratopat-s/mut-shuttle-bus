@@ -13,6 +13,7 @@
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio"
+
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
@@ -64,4 +65,5 @@
   "prisma": {
     "seed": "bun run prisma/seed.ts"
   }
+  
 }

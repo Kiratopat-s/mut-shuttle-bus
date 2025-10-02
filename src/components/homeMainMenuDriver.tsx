@@ -19,7 +19,7 @@ const DriverMenu: HomeMenu[] = [
   {
     name: "Driver System",
     icon: <MapPin />,
-    link: "/driver/routes",
+    link: "/driver/",
   },
   
 ];
