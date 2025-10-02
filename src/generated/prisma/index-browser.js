@@ -259,6 +259,7 @@ exports.VehicleStatus = exports.$Enums.VehicleStatus = {
 exports.RouteStatus = exports.$Enums.RouteStatus = {
   UPCOMING: 'UPCOMING',
   CANCELLED: 'CANCELLED',
+  ONGOING: 'ONGOING',
   COMPLETED: 'COMPLETED'
 };
 

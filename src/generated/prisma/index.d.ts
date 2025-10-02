@@ -105,6 +105,7 @@ export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
 export const RouteStatus: {
   UPCOMING: 'UPCOMING',
   CANCELLED: 'CANCELLED',
+  ONGOING: 'ONGOING',
   COMPLETED: 'COMPLETED'
 };
 

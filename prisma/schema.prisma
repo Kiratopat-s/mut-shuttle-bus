@@ -213,5 +213,6 @@ enum BookingStatus {
 enum RouteStatus {
   UPCOMING
   CANCELLED
+  ONGOING
   COMPLETED
 }
