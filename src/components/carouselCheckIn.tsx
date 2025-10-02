@@ -7,17 +7,17 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import MiniBookingCard from "./miniBookingCard";
-import { useActiveBookings } from "@/hooks/useBookings";
+import { useActiveBookings, BookingCardInfo } from "@/hooks/useBookings";
 
 interface CarouselCheckInProps {
-  onOpenQrModal?: () => void;
+  onOpenQrModal?: (booking: BookingCardInfo) => void;
 }
 
 export function CarouselCheckIn({ onOpenQrModal }: CarouselCheckInProps) {
   const { bookings, loading, error } = useActiveBookings();
 
-  const handleOpenQrPassengerModal = () => {
-    onOpenQrModal?.();
+  const handleOpenQrPassengerModal = (booking: BookingCardInfo) => {
+    onOpenQrModal?.(booking);
   };
 
   if (loading) {

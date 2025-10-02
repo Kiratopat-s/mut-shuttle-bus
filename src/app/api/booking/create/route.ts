@@ -1,13 +1,12 @@
 import { NextRequest } from "next/server";
-import { PrismaClient, BookingStatus } from "@/generated/prisma";
+import { BookingStatus } from "@/generated/prisma";
 import {
     createApiResponse,
     getAuthUser,
     validateRequiredFields,
     handleApiError,
 } from "@/lib/api-helpers";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export interface CreateBookingRequest {
     originStopId: number;

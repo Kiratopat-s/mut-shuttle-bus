@@ -1,8 +1,6 @@
-import { PrismaClient } from "@/generated/prisma";
 import { Base64 } from "js-base64";
 import { NextRequest, NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export interface RegisterRequest {
   roleId: number;

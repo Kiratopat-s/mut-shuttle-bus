@@ -17,15 +17,19 @@ function OriginToDestination({
   return (
     <>
       <div className="flex flex-row gap-4 items-center w-full justify-between">
-        <div className="flex-col gap-1">
-          <p>{origin}</p>
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
+          <p className="truncate" title={origin}>
+            {origin}
+          </p>
           <p className="text-xs text-gray-500">{departTime}</p>
         </div>
-        <div className="">
+        <div className="flex-shrink-0">
           <Car />
         </div>
-        <div className="flex-col gap-1">
-          <p>{destination}</p>
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
+          <p className="truncate text-right" title={destination}>
+            {destination}
+          </p>
           <p className="text-xs text-gray-500 text-right">{arriveTime}</p>
         </div>
       </div>

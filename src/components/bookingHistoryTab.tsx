@@ -1,14 +1,18 @@
 "use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MiniBookingCard from "./miniBookingCard";
-import { useActiveBookings } from "@/hooks/useBookings";
-import { useMemo } from "react";
+import { useActiveBookings, BookingCardInfo } from "@/hooks/useBookings";
+import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CalendarX } from "lucide-react";
+import QrPassanger from "./modals/qrPassangerModal";
 
 export function BookingHistoryTab() {
   const { bookings, loading, error, refetch } = useActiveBookings();
+  const [selectedBooking, setSelectedBooking] =
+    useState<BookingCardInfo | null>(null);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
   // Split bookings into upcoming and past based on depart date
   const { upcomingBookings, pastBookings } = useMemo(() => {
@@ -42,8 +46,14 @@ export function BookingHistoryTab() {
     return { upcomingBookings: upcoming, pastBookings: past };
   }, [bookings]);
 
-  const handleOpenQrPassengerModal = () => {
-    console.log("go to details?");
+  const handleOpenQrPassengerModal = (booking: BookingCardInfo) => {
+    setSelectedBooking(booking);
+    setQrModalOpen(true);
+  };
+
+  const handleCloseQrModal = () => {
+    setQrModalOpen(false);
+    setSelectedBooking(null);
   };
 
   // Loading state
@@ -80,6 +90,7 @@ export function BookingHistoryTab() {
           <AlertDescription>
             {error}
             <button
+              type="button"
               onClick={refetch}
               className="ml-2 underline hover:no-underline"
             >
@@ -93,6 +104,12 @@ export function BookingHistoryTab() {
 
   return (
     <div className="flex w-full max-w-sm flex-col gap-6">
+      <QrPassanger
+        isOpen={qrModalOpen}
+        onClose={handleCloseQrModal}
+        bookingData={selectedBooking}
+      />
+
       <Tabs defaultValue="upcoming">
         <TabsList>
           <TabsTrigger value="upcoming">

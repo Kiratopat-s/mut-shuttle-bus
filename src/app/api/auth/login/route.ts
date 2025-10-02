@@ -2,9 +2,7 @@ import { Base64 } from "js-base64";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { PrismaClient } from "@/generated/prisma";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export interface LoginRequest {
   email: string;

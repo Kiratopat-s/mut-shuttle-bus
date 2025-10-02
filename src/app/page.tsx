@@ -1,33 +1,38 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { CarouselCheckIn } from "@/components/carouselCheckIn";
 import HomeMainMenu from "@/components/homeMainMenu";
 import HomeMainMenuDriver from "@/components/homeMainMenuDriver";
 import QrPassanger from "@/components/modals/qrPassangerModal";
-import { useQueryState, parseAsBoolean } from "nuqs";
 import { useUserInformation } from "@/provider/UserProvider";
+import { BookingCardInfo } from "@/hooks/useBookings";
 
 function HomeContent() {
   const { user } = useUserInformation();
-  const [qrModalOpen, setQrModalOpen] = useQueryState(
-    "qr",
-    parseAsBoolean.withDefault(false)
-  );
+  const [selectedBooking, setSelectedBooking] =
+    useState<BookingCardInfo | null>(null);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
-  const handleOpenQrModal = () => {
+  const handleOpenQrModal = (booking: BookingCardInfo) => {
+    setSelectedBooking(booking);
     setQrModalOpen(true);
   };
 
   const handleCloseQrModal = () => {
     setQrModalOpen(false);
+    setSelectedBooking(null);
   };
 
   const isDriver = user?.role.roleName === "driver";
 
   return (
     <div className="flex min-h-screen flex-col items-center w-full p-2 gap-12">
-      <QrPassanger isOpen={qrModalOpen} onClose={handleCloseQrModal} />
+      <QrPassanger
+        isOpen={qrModalOpen}
+        onClose={handleCloseQrModal}
+        bookingData={selectedBooking}
+      />
 
       {/* แสดง CarouselCheckIn เฉพาะผู้ใช้ที่ไม่ใช่ driver */}
       {!isDriver && (

@@ -1,7 +1,5 @@
-import { PrismaClient } from "@/generated/prisma";
 import { NextRequest, NextResponse } from "next/server";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const userId = req.headers.get("X-User-Id");

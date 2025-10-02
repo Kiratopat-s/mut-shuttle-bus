@@ -1,12 +1,10 @@
 import { NextRequest } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
 import {
     createApiResponse,
     getAuthUser,
     handleApiError,
 } from "@/lib/api-helpers";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 /**
  * GET /api/booking/get-by-booking-id?bookingId=<id>

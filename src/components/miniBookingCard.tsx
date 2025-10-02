@@ -5,7 +5,16 @@ import { EllipsisVertical, MonitorCog, QrCode } from "lucide-react";
 import { ButtonWithIcon } from "./buttonWithLogo";
 import OriginToDestination from "./originToDestination";
 interface MiniBookingCardProps {
-  handleOpenQrPassengerModal: () => void;
+  handleOpenQrPassengerModal: (bookingInfo: {
+    id: number;
+    origin: string;
+    destination: string;
+    departTime: string;
+    arriveTime: string;
+    departDate: string;
+    bookingNo: string;
+    vehicleNo: string;
+  }) => void;
   bookingInfo: {
     id: number;
     origin: string;
@@ -23,10 +32,14 @@ function MiniBookingCard({
   handleOpenQrPassengerModal,
   bookingInfo,
 }: MiniBookingCardProps) {
+  const handleClick = () => {
+    handleOpenQrPassengerModal(bookingInfo);
+  };
+
   return (
-    <div onClick={handleOpenQrPassengerModal} key={bookingInfo.id}>
+    <div onClick={handleClick} key={bookingInfo.id} className="cursor-pointer">
       <div className="p-2">
-        <Card className="!p-0">
+        <Card className="!p-0 hover:shadow-lg transition-shadow">
           <CardContent className="flex items-center justify-center p-2">
             <div className="flex flex-col gap-2 w-full">
               <div className="flex justify-between w-full items-center">
