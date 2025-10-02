@@ -75,6 +75,7 @@ model BusStop {
   BookingOrigin      Booking[]      @relation("OriginStop")
   RouteBusStop       RouteBusStop[]
   vehicles           Vehicle[]
+  NextStop           RouteBusStop[] @relation("NextStop")
 
   @@map("bus_stops")
 }
@@ -85,7 +86,6 @@ model Route {
   overallTravelTime    Int                    @map("overall_travel_time")
   createdAt            DateTime               @map("created_at") @default(now())
   updatedAt            DateTime               @map("updated_at") @updatedAt @default(now())
-  NextStop             RouteBusStop[]         @relation("NextStop")
   RouteBusStop         RouteBusStop[]
   VehicleRouteSchedule VehicleRouteSchedule[]
   Vehicle              Vehicle[]              @relation("RouteToVehicle")
@@ -115,10 +115,10 @@ model RouteBusStop {
 
   route      Route    @relation(fields: [routeId], references: [routeId])
   busStop    BusStop  @relation(fields: [busStopId], references: [busStopId])
-  nextStop   Route    @relation("NextStop", fields: [nextStopId], references: [routeId])
+  nextStop   BusStop    @relation("NextStop", fields: [nextStopId], references: [busStopId])
 
   @@map("route_bus_stops")
-  @@id([routeId, busStopId])
+  @@id([routeId, stopOrder])
 }
 
 model Vehicle {

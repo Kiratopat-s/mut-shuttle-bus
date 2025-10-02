@@ -2134,6 +2134,7 @@ export namespace Prisma {
     BookingOrigin: number
     RouteBusStop: number
     vehicles: number
+    NextStop: number
   }
 
   export type BusStopCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2141,6 +2142,7 @@ export namespace Prisma {
     BookingOrigin?: boolean | BusStopCountOutputTypeCountBookingOriginArgs
     RouteBusStop?: boolean | BusStopCountOutputTypeCountRouteBusStopArgs
     vehicles?: boolean | BusStopCountOutputTypeCountVehiclesArgs
+    NextStop?: boolean | BusStopCountOutputTypeCountNextStopArgs
   }
 
   // Custom InputTypes
@@ -2182,20 +2184,25 @@ export namespace Prisma {
     where?: VehicleWhereInput
   }
 
+  /**
+   * BusStopCountOutputType without action
+   */
+  export type BusStopCountOutputTypeCountNextStopArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RouteBusStopWhereInput
+  }
+
 
   /**
    * Count Type RouteCountOutputType
    */
 
   export type RouteCountOutputType = {
-    NextStop: number
     RouteBusStop: number
     VehicleRouteSchedule: number
     Vehicle: number
   }
 
   export type RouteCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    NextStop?: boolean | RouteCountOutputTypeCountNextStopArgs
     RouteBusStop?: boolean | RouteCountOutputTypeCountRouteBusStopArgs
     VehicleRouteSchedule?: boolean | RouteCountOutputTypeCountVehicleRouteScheduleArgs
     Vehicle?: boolean | RouteCountOutputTypeCountVehicleArgs
@@ -2210,13 +2217,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the RouteCountOutputType
      */
     select?: RouteCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * RouteCountOutputType without action
-   */
-  export type RouteCountOutputTypeCountNextStopArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: RouteBusStopWhereInput
   }
 
   /**
@@ -8142,6 +8142,7 @@ export namespace Prisma {
     BookingOrigin?: boolean | BusStop$BookingOriginArgs<ExtArgs>
     RouteBusStop?: boolean | BusStop$RouteBusStopArgs<ExtArgs>
     vehicles?: boolean | BusStop$vehiclesArgs<ExtArgs>
+    NextStop?: boolean | BusStop$NextStopArgs<ExtArgs>
     _count?: boolean | BusStopCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["busStop"]>
 
@@ -8178,6 +8179,7 @@ export namespace Prisma {
     BookingOrigin?: boolean | BusStop$BookingOriginArgs<ExtArgs>
     RouteBusStop?: boolean | BusStop$RouteBusStopArgs<ExtArgs>
     vehicles?: boolean | BusStop$vehiclesArgs<ExtArgs>
+    NextStop?: boolean | BusStop$NextStopArgs<ExtArgs>
     _count?: boolean | BusStopCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type BusStopIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -8190,6 +8192,7 @@ export namespace Prisma {
       BookingOrigin: Prisma.$BookingPayload<ExtArgs>[]
       RouteBusStop: Prisma.$RouteBusStopPayload<ExtArgs>[]
       vehicles: Prisma.$VehiclePayload<ExtArgs>[]
+      NextStop: Prisma.$RouteBusStopPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       busStopId: number
@@ -8596,6 +8599,7 @@ export namespace Prisma {
     BookingOrigin<T extends BusStop$BookingOriginArgs<ExtArgs> = {}>(args?: Subset<T, BusStop$BookingOriginArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     RouteBusStop<T extends BusStop$RouteBusStopArgs<ExtArgs> = {}>(args?: Subset<T, BusStop$RouteBusStopArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RouteBusStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     vehicles<T extends BusStop$vehiclesArgs<ExtArgs> = {}>(args?: Subset<T, BusStop$vehiclesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VehiclePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    NextStop<T extends BusStop$NextStopArgs<ExtArgs> = {}>(args?: Subset<T, BusStop$NextStopArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RouteBusStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9115,6 +9119,30 @@ export namespace Prisma {
   }
 
   /**
+   * BusStop.NextStop
+   */
+  export type BusStop$NextStopArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RouteBusStop
+     */
+    select?: RouteBusStopSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the RouteBusStop
+     */
+    omit?: RouteBusStopOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RouteBusStopInclude<ExtArgs> | null
+    where?: RouteBusStopWhereInput
+    orderBy?: RouteBusStopOrderByWithRelationInput | RouteBusStopOrderByWithRelationInput[]
+    cursor?: RouteBusStopWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: RouteBusStopScalarFieldEnum | RouteBusStopScalarFieldEnum[]
+  }
+
+  /**
    * BusStop without action
    */
   export type BusStopDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9335,7 +9363,6 @@ export namespace Prisma {
     overallTravelTime?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    NextStop?: boolean | Route$NextStopArgs<ExtArgs>
     RouteBusStop?: boolean | Route$RouteBusStopArgs<ExtArgs>
     VehicleRouteSchedule?: boolean | Route$VehicleRouteScheduleArgs<ExtArgs>
     Vehicle?: boolean | Route$VehicleArgs<ExtArgs>
@@ -9368,7 +9395,6 @@ export namespace Prisma {
 
   export type RouteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"routeId" | "routeName" | "overallTravelTime" | "createdAt" | "updatedAt", ExtArgs["result"]["route"]>
   export type RouteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    NextStop?: boolean | Route$NextStopArgs<ExtArgs>
     RouteBusStop?: boolean | Route$RouteBusStopArgs<ExtArgs>
     VehicleRouteSchedule?: boolean | Route$VehicleRouteScheduleArgs<ExtArgs>
     Vehicle?: boolean | Route$VehicleArgs<ExtArgs>
@@ -9380,7 +9406,6 @@ export namespace Prisma {
   export type $RoutePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Route"
     objects: {
-      NextStop: Prisma.$RouteBusStopPayload<ExtArgs>[]
       RouteBusStop: Prisma.$RouteBusStopPayload<ExtArgs>[]
       VehicleRouteSchedule: Prisma.$VehicleRouteSchedulePayload<ExtArgs>[]
       Vehicle: Prisma.$VehiclePayload<ExtArgs>[]
@@ -9785,7 +9810,6 @@ export namespace Prisma {
    */
   export interface Prisma__RouteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    NextStop<T extends Route$NextStopArgs<ExtArgs> = {}>(args?: Subset<T, Route$NextStopArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RouteBusStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     RouteBusStop<T extends Route$RouteBusStopArgs<ExtArgs> = {}>(args?: Subset<T, Route$RouteBusStopArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RouteBusStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     VehicleRouteSchedule<T extends Route$VehicleRouteScheduleArgs<ExtArgs> = {}>(args?: Subset<T, Route$VehicleRouteScheduleArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VehicleRouteSchedulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     Vehicle<T extends Route$VehicleArgs<ExtArgs> = {}>(args?: Subset<T, Route$VehicleArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VehiclePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -10208,30 +10232,6 @@ export namespace Prisma {
      * Limit how many Routes to delete.
      */
     limit?: number
-  }
-
-  /**
-   * Route.NextStop
-   */
-  export type Route$NextStopArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the RouteBusStop
-     */
-    select?: RouteBusStopSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the RouteBusStop
-     */
-    omit?: RouteBusStopOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RouteBusStopInclude<ExtArgs> | null
-    where?: RouteBusStopWhereInput
-    orderBy?: RouteBusStopOrderByWithRelationInput | RouteBusStopOrderByWithRelationInput[]
-    cursor?: RouteBusStopWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: RouteBusStopScalarFieldEnum | RouteBusStopScalarFieldEnum[]
   }
 
   /**
@@ -11665,7 +11665,7 @@ export namespace Prisma {
     updatedAt?: boolean
     route?: boolean | RouteDefaultArgs<ExtArgs>
     busStop?: boolean | BusStopDefaultArgs<ExtArgs>
-    nextStop?: boolean | RouteDefaultArgs<ExtArgs>
+    nextStop?: boolean | BusStopDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["routeBusStop"]>
 
   export type RouteBusStopSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -11678,7 +11678,7 @@ export namespace Prisma {
     updatedAt?: boolean
     route?: boolean | RouteDefaultArgs<ExtArgs>
     busStop?: boolean | BusStopDefaultArgs<ExtArgs>
-    nextStop?: boolean | RouteDefaultArgs<ExtArgs>
+    nextStop?: boolean | BusStopDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["routeBusStop"]>
 
   export type RouteBusStopSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -11691,7 +11691,7 @@ export namespace Prisma {
     updatedAt?: boolean
     route?: boolean | RouteDefaultArgs<ExtArgs>
     busStop?: boolean | BusStopDefaultArgs<ExtArgs>
-    nextStop?: boolean | RouteDefaultArgs<ExtArgs>
+    nextStop?: boolean | BusStopDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["routeBusStop"]>
 
   export type RouteBusStopSelectScalar = {
@@ -11708,17 +11708,17 @@ export namespace Prisma {
   export type RouteBusStopInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     route?: boolean | RouteDefaultArgs<ExtArgs>
     busStop?: boolean | BusStopDefaultArgs<ExtArgs>
-    nextStop?: boolean | RouteDefaultArgs<ExtArgs>
+    nextStop?: boolean | BusStopDefaultArgs<ExtArgs>
   }
   export type RouteBusStopIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     route?: boolean | RouteDefaultArgs<ExtArgs>
     busStop?: boolean | BusStopDefaultArgs<ExtArgs>
-    nextStop?: boolean | RouteDefaultArgs<ExtArgs>
+    nextStop?: boolean | BusStopDefaultArgs<ExtArgs>
   }
   export type RouteBusStopIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     route?: boolean | RouteDefaultArgs<ExtArgs>
     busStop?: boolean | BusStopDefaultArgs<ExtArgs>
-    nextStop?: boolean | RouteDefaultArgs<ExtArgs>
+    nextStop?: boolean | BusStopDefaultArgs<ExtArgs>
   }
 
   export type $RouteBusStopPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11726,7 +11726,7 @@ export namespace Prisma {
     objects: {
       route: Prisma.$RoutePayload<ExtArgs>
       busStop: Prisma.$BusStopPayload<ExtArgs>
-      nextStop: Prisma.$RoutePayload<ExtArgs>
+      nextStop: Prisma.$BusStopPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       routeId: number
@@ -12132,7 +12132,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     route<T extends RouteDefaultArgs<ExtArgs> = {}>(args?: Subset<T, RouteDefaultArgs<ExtArgs>>): Prisma__RouteClient<$Result.GetResult<Prisma.$RoutePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     busStop<T extends BusStopDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BusStopDefaultArgs<ExtArgs>>): Prisma__BusStopClient<$Result.GetResult<Prisma.$BusStopPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    nextStop<T extends RouteDefaultArgs<ExtArgs> = {}>(args?: Subset<T, RouteDefaultArgs<ExtArgs>>): Prisma__RouteClient<$Result.GetResult<Prisma.$RoutePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    nextStop<T extends BusStopDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BusStopDefaultArgs<ExtArgs>>): Prisma__BusStopClient<$Result.GetResult<Prisma.$BusStopPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17996,6 +17996,7 @@ export namespace Prisma {
     BookingOrigin?: BookingListRelationFilter
     RouteBusStop?: RouteBusStopListRelationFilter
     vehicles?: VehicleListRelationFilter
+    NextStop?: RouteBusStopListRelationFilter
   }
 
   export type BusStopOrderByWithRelationInput = {
@@ -18009,6 +18010,7 @@ export namespace Prisma {
     BookingOrigin?: BookingOrderByRelationAggregateInput
     RouteBusStop?: RouteBusStopOrderByRelationAggregateInput
     vehicles?: VehicleOrderByRelationAggregateInput
+    NextStop?: RouteBusStopOrderByRelationAggregateInput
   }
 
   export type BusStopWhereUniqueInput = Prisma.AtLeast<{
@@ -18025,6 +18027,7 @@ export namespace Prisma {
     BookingOrigin?: BookingListRelationFilter
     RouteBusStop?: RouteBusStopListRelationFilter
     vehicles?: VehicleListRelationFilter
+    NextStop?: RouteBusStopListRelationFilter
   }, "busStopId">
 
   export type BusStopOrderByWithAggregationInput = {
@@ -18062,7 +18065,6 @@ export namespace Prisma {
     overallTravelTime?: IntFilter<"Route"> | number
     createdAt?: DateTimeFilter<"Route"> | Date | string
     updatedAt?: DateTimeFilter<"Route"> | Date | string
-    NextStop?: RouteBusStopListRelationFilter
     RouteBusStop?: RouteBusStopListRelationFilter
     VehicleRouteSchedule?: VehicleRouteScheduleListRelationFilter
     Vehicle?: VehicleListRelationFilter
@@ -18074,7 +18076,6 @@ export namespace Prisma {
     overallTravelTime?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    NextStop?: RouteBusStopOrderByRelationAggregateInput
     RouteBusStop?: RouteBusStopOrderByRelationAggregateInput
     VehicleRouteSchedule?: VehicleRouteScheduleOrderByRelationAggregateInput
     Vehicle?: VehicleOrderByRelationAggregateInput
@@ -18089,7 +18090,6 @@ export namespace Prisma {
     overallTravelTime?: IntFilter<"Route"> | number
     createdAt?: DateTimeFilter<"Route"> | Date | string
     updatedAt?: DateTimeFilter<"Route"> | Date | string
-    NextStop?: RouteBusStopListRelationFilter
     RouteBusStop?: RouteBusStopListRelationFilter
     VehicleRouteSchedule?: VehicleRouteScheduleListRelationFilter
     Vehicle?: VehicleListRelationFilter
@@ -18189,7 +18189,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"RouteBusStop"> | Date | string
     route?: XOR<RouteScalarRelationFilter, RouteWhereInput>
     busStop?: XOR<BusStopScalarRelationFilter, BusStopWhereInput>
-    nextStop?: XOR<RouteScalarRelationFilter, RouteWhereInput>
+    nextStop?: XOR<BusStopScalarRelationFilter, BusStopWhereInput>
   }
 
   export type RouteBusStopOrderByWithRelationInput = {
@@ -18202,11 +18202,11 @@ export namespace Prisma {
     updatedAt?: SortOrder
     route?: RouteOrderByWithRelationInput
     busStop?: BusStopOrderByWithRelationInput
-    nextStop?: RouteOrderByWithRelationInput
+    nextStop?: BusStopOrderByWithRelationInput
   }
 
   export type RouteBusStopWhereUniqueInput = Prisma.AtLeast<{
-    routeId_busStopId?: RouteBusStopRouteIdBusStopIdCompoundUniqueInput
+    routeId_stopOrder?: RouteBusStopRouteIdStopOrderCompoundUniqueInput
     AND?: RouteBusStopWhereInput | RouteBusStopWhereInput[]
     OR?: RouteBusStopWhereInput[]
     NOT?: RouteBusStopWhereInput | RouteBusStopWhereInput[]
@@ -18219,8 +18219,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"RouteBusStop"> | Date | string
     route?: XOR<RouteScalarRelationFilter, RouteWhereInput>
     busStop?: XOR<BusStopScalarRelationFilter, BusStopWhereInput>
-    nextStop?: XOR<RouteScalarRelationFilter, RouteWhereInput>
-  }, "routeId_busStopId">
+    nextStop?: XOR<BusStopScalarRelationFilter, BusStopWhereInput>
+  }, "routeId_stopOrder">
 
   export type RouteBusStopOrderByWithAggregationInput = {
     routeId?: SortOrder
@@ -18846,6 +18846,7 @@ export namespace Prisma {
     BookingOrigin?: BookingCreateNestedManyWithoutOriginStopInput
     RouteBusStop?: RouteBusStopCreateNestedManyWithoutBusStopInput
     vehicles?: VehicleCreateNestedManyWithoutBusStopInput
+    NextStop?: RouteBusStopCreateNestedManyWithoutNextStopInput
   }
 
   export type BusStopUncheckedCreateInput = {
@@ -18859,6 +18860,7 @@ export namespace Prisma {
     BookingOrigin?: BookingUncheckedCreateNestedManyWithoutOriginStopInput
     RouteBusStop?: RouteBusStopUncheckedCreateNestedManyWithoutBusStopInput
     vehicles?: VehicleUncheckedCreateNestedManyWithoutBusStopInput
+    NextStop?: RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput
   }
 
   export type BusStopUpdateInput = {
@@ -18871,6 +18873,7 @@ export namespace Prisma {
     BookingOrigin?: BookingUpdateManyWithoutOriginStopNestedInput
     RouteBusStop?: RouteBusStopUpdateManyWithoutBusStopNestedInput
     vehicles?: VehicleUpdateManyWithoutBusStopNestedInput
+    NextStop?: RouteBusStopUpdateManyWithoutNextStopNestedInput
   }
 
   export type BusStopUncheckedUpdateInput = {
@@ -18884,6 +18887,7 @@ export namespace Prisma {
     BookingOrigin?: BookingUncheckedUpdateManyWithoutOriginStopNestedInput
     RouteBusStop?: RouteBusStopUncheckedUpdateManyWithoutBusStopNestedInput
     vehicles?: VehicleUncheckedUpdateManyWithoutBusStopNestedInput
+    NextStop?: RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput
   }
 
   export type BusStopCreateManyInput = {
@@ -18917,7 +18921,6 @@ export namespace Prisma {
     overallTravelTime: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    NextStop?: RouteBusStopCreateNestedManyWithoutNextStopInput
     RouteBusStop?: RouteBusStopCreateNestedManyWithoutRouteInput
     VehicleRouteSchedule?: VehicleRouteScheduleCreateNestedManyWithoutRouteInput
     Vehicle?: VehicleCreateNestedManyWithoutRouteInput
@@ -18929,7 +18932,6 @@ export namespace Prisma {
     overallTravelTime: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    NextStop?: RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput
     RouteBusStop?: RouteBusStopUncheckedCreateNestedManyWithoutRouteInput
     VehicleRouteSchedule?: VehicleRouteScheduleUncheckedCreateNestedManyWithoutRouteInput
     Vehicle?: VehicleUncheckedCreateNestedManyWithoutRouteInput
@@ -18940,7 +18942,6 @@ export namespace Prisma {
     overallTravelTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    NextStop?: RouteBusStopUpdateManyWithoutNextStopNestedInput
     RouteBusStop?: RouteBusStopUpdateManyWithoutRouteNestedInput
     VehicleRouteSchedule?: VehicleRouteScheduleUpdateManyWithoutRouteNestedInput
     Vehicle?: VehicleUpdateManyWithoutRouteNestedInput
@@ -18952,7 +18953,6 @@ export namespace Prisma {
     overallTravelTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    NextStop?: RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput
     RouteBusStop?: RouteBusStopUncheckedUpdateManyWithoutRouteNestedInput
     VehicleRouteSchedule?: VehicleRouteScheduleUncheckedUpdateManyWithoutRouteNestedInput
     Vehicle?: VehicleUncheckedUpdateManyWithoutRouteNestedInput
@@ -19045,7 +19045,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     route: RouteCreateNestedOneWithoutRouteBusStopInput
     busStop: BusStopCreateNestedOneWithoutRouteBusStopInput
-    nextStop: RouteCreateNestedOneWithoutNextStopInput
+    nextStop: BusStopCreateNestedOneWithoutNextStopInput
   }
 
   export type RouteBusStopUncheckedCreateInput = {
@@ -19065,7 +19065,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     route?: RouteUpdateOneRequiredWithoutRouteBusStopNestedInput
     busStop?: BusStopUpdateOneRequiredWithoutRouteBusStopNestedInput
-    nextStop?: RouteUpdateOneRequiredWithoutNextStopNestedInput
+    nextStop?: BusStopUpdateOneRequiredWithoutNextStopNestedInput
   }
 
   export type RouteBusStopUncheckedUpdateInput = {
@@ -19920,9 +19920,9 @@ export namespace Prisma {
     isNot?: BusStopWhereInput
   }
 
-  export type RouteBusStopRouteIdBusStopIdCompoundUniqueInput = {
+  export type RouteBusStopRouteIdStopOrderCompoundUniqueInput = {
     routeId: number
-    busStopId: number
+    stopOrder: number
   }
 
   export type RouteBusStopCountOrderByAggregateInput = {
@@ -20559,6 +20559,13 @@ export namespace Prisma {
     connect?: VehicleWhereUniqueInput | VehicleWhereUniqueInput[]
   }
 
+  export type RouteBusStopCreateNestedManyWithoutNextStopInput = {
+    create?: XOR<RouteBusStopCreateWithoutNextStopInput, RouteBusStopUncheckedCreateWithoutNextStopInput> | RouteBusStopCreateWithoutNextStopInput[] | RouteBusStopUncheckedCreateWithoutNextStopInput[]
+    connectOrCreate?: RouteBusStopCreateOrConnectWithoutNextStopInput | RouteBusStopCreateOrConnectWithoutNextStopInput[]
+    createMany?: RouteBusStopCreateManyNextStopInputEnvelope
+    connect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
+  }
+
   export type BookingUncheckedCreateNestedManyWithoutDestinationStopInput = {
     create?: XOR<BookingCreateWithoutDestinationStopInput, BookingUncheckedCreateWithoutDestinationStopInput> | BookingCreateWithoutDestinationStopInput[] | BookingUncheckedCreateWithoutDestinationStopInput[]
     connectOrCreate?: BookingCreateOrConnectWithoutDestinationStopInput | BookingCreateOrConnectWithoutDestinationStopInput[]
@@ -20585,6 +20592,13 @@ export namespace Prisma {
     connectOrCreate?: VehicleCreateOrConnectWithoutBusStopInput | VehicleCreateOrConnectWithoutBusStopInput[]
     createMany?: VehicleCreateManyBusStopInputEnvelope
     connect?: VehicleWhereUniqueInput | VehicleWhereUniqueInput[]
+  }
+
+  export type RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput = {
+    create?: XOR<RouteBusStopCreateWithoutNextStopInput, RouteBusStopUncheckedCreateWithoutNextStopInput> | RouteBusStopCreateWithoutNextStopInput[] | RouteBusStopUncheckedCreateWithoutNextStopInput[]
+    connectOrCreate?: RouteBusStopCreateOrConnectWithoutNextStopInput | RouteBusStopCreateOrConnectWithoutNextStopInput[]
+    createMany?: RouteBusStopCreateManyNextStopInputEnvelope
+    connect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
   }
 
   export type FloatFieldUpdateOperationsInput = {
@@ -20651,6 +20665,20 @@ export namespace Prisma {
     deleteMany?: VehicleScalarWhereInput | VehicleScalarWhereInput[]
   }
 
+  export type RouteBusStopUpdateManyWithoutNextStopNestedInput = {
+    create?: XOR<RouteBusStopCreateWithoutNextStopInput, RouteBusStopUncheckedCreateWithoutNextStopInput> | RouteBusStopCreateWithoutNextStopInput[] | RouteBusStopUncheckedCreateWithoutNextStopInput[]
+    connectOrCreate?: RouteBusStopCreateOrConnectWithoutNextStopInput | RouteBusStopCreateOrConnectWithoutNextStopInput[]
+    upsert?: RouteBusStopUpsertWithWhereUniqueWithoutNextStopInput | RouteBusStopUpsertWithWhereUniqueWithoutNextStopInput[]
+    createMany?: RouteBusStopCreateManyNextStopInputEnvelope
+    set?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
+    disconnect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
+    delete?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
+    connect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
+    update?: RouteBusStopUpdateWithWhereUniqueWithoutNextStopInput | RouteBusStopUpdateWithWhereUniqueWithoutNextStopInput[]
+    updateMany?: RouteBusStopUpdateManyWithWhereWithoutNextStopInput | RouteBusStopUpdateManyWithWhereWithoutNextStopInput[]
+    deleteMany?: RouteBusStopScalarWhereInput | RouteBusStopScalarWhereInput[]
+  }
+
   export type BookingUncheckedUpdateManyWithoutDestinationStopNestedInput = {
     create?: XOR<BookingCreateWithoutDestinationStopInput, BookingUncheckedCreateWithoutDestinationStopInput> | BookingCreateWithoutDestinationStopInput[] | BookingUncheckedCreateWithoutDestinationStopInput[]
     connectOrCreate?: BookingCreateOrConnectWithoutDestinationStopInput | BookingCreateOrConnectWithoutDestinationStopInput[]
@@ -20707,11 +20735,18 @@ export namespace Prisma {
     deleteMany?: VehicleScalarWhereInput | VehicleScalarWhereInput[]
   }
 
-  export type RouteBusStopCreateNestedManyWithoutNextStopInput = {
+  export type RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput = {
     create?: XOR<RouteBusStopCreateWithoutNextStopInput, RouteBusStopUncheckedCreateWithoutNextStopInput> | RouteBusStopCreateWithoutNextStopInput[] | RouteBusStopUncheckedCreateWithoutNextStopInput[]
     connectOrCreate?: RouteBusStopCreateOrConnectWithoutNextStopInput | RouteBusStopCreateOrConnectWithoutNextStopInput[]
+    upsert?: RouteBusStopUpsertWithWhereUniqueWithoutNextStopInput | RouteBusStopUpsertWithWhereUniqueWithoutNextStopInput[]
     createMany?: RouteBusStopCreateManyNextStopInputEnvelope
+    set?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
+    disconnect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
+    delete?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
     connect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
+    update?: RouteBusStopUpdateWithWhereUniqueWithoutNextStopInput | RouteBusStopUpdateWithWhereUniqueWithoutNextStopInput[]
+    updateMany?: RouteBusStopUpdateManyWithWhereWithoutNextStopInput | RouteBusStopUpdateManyWithWhereWithoutNextStopInput[]
+    deleteMany?: RouteBusStopScalarWhereInput | RouteBusStopScalarWhereInput[]
   }
 
   export type RouteBusStopCreateNestedManyWithoutRouteInput = {
@@ -20734,13 +20769,6 @@ export namespace Prisma {
     connect?: VehicleWhereUniqueInput | VehicleWhereUniqueInput[]
   }
 
-  export type RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput = {
-    create?: XOR<RouteBusStopCreateWithoutNextStopInput, RouteBusStopUncheckedCreateWithoutNextStopInput> | RouteBusStopCreateWithoutNextStopInput[] | RouteBusStopUncheckedCreateWithoutNextStopInput[]
-    connectOrCreate?: RouteBusStopCreateOrConnectWithoutNextStopInput | RouteBusStopCreateOrConnectWithoutNextStopInput[]
-    createMany?: RouteBusStopCreateManyNextStopInputEnvelope
-    connect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
-  }
-
   export type RouteBusStopUncheckedCreateNestedManyWithoutRouteInput = {
     create?: XOR<RouteBusStopCreateWithoutRouteInput, RouteBusStopUncheckedCreateWithoutRouteInput> | RouteBusStopCreateWithoutRouteInput[] | RouteBusStopUncheckedCreateWithoutRouteInput[]
     connectOrCreate?: RouteBusStopCreateOrConnectWithoutRouteInput | RouteBusStopCreateOrConnectWithoutRouteInput[]
@@ -20759,20 +20787,6 @@ export namespace Prisma {
     create?: XOR<VehicleCreateWithoutRouteInput, VehicleUncheckedCreateWithoutRouteInput> | VehicleCreateWithoutRouteInput[] | VehicleUncheckedCreateWithoutRouteInput[]
     connectOrCreate?: VehicleCreateOrConnectWithoutRouteInput | VehicleCreateOrConnectWithoutRouteInput[]
     connect?: VehicleWhereUniqueInput | VehicleWhereUniqueInput[]
-  }
-
-  export type RouteBusStopUpdateManyWithoutNextStopNestedInput = {
-    create?: XOR<RouteBusStopCreateWithoutNextStopInput, RouteBusStopUncheckedCreateWithoutNextStopInput> | RouteBusStopCreateWithoutNextStopInput[] | RouteBusStopUncheckedCreateWithoutNextStopInput[]
-    connectOrCreate?: RouteBusStopCreateOrConnectWithoutNextStopInput | RouteBusStopCreateOrConnectWithoutNextStopInput[]
-    upsert?: RouteBusStopUpsertWithWhereUniqueWithoutNextStopInput | RouteBusStopUpsertWithWhereUniqueWithoutNextStopInput[]
-    createMany?: RouteBusStopCreateManyNextStopInputEnvelope
-    set?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
-    disconnect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
-    delete?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
-    connect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
-    update?: RouteBusStopUpdateWithWhereUniqueWithoutNextStopInput | RouteBusStopUpdateWithWhereUniqueWithoutNextStopInput[]
-    updateMany?: RouteBusStopUpdateManyWithWhereWithoutNextStopInput | RouteBusStopUpdateManyWithWhereWithoutNextStopInput[]
-    deleteMany?: RouteBusStopScalarWhereInput | RouteBusStopScalarWhereInput[]
   }
 
   export type RouteBusStopUpdateManyWithoutRouteNestedInput = {
@@ -20814,20 +20828,6 @@ export namespace Prisma {
     update?: VehicleUpdateWithWhereUniqueWithoutRouteInput | VehicleUpdateWithWhereUniqueWithoutRouteInput[]
     updateMany?: VehicleUpdateManyWithWhereWithoutRouteInput | VehicleUpdateManyWithWhereWithoutRouteInput[]
     deleteMany?: VehicleScalarWhereInput | VehicleScalarWhereInput[]
-  }
-
-  export type RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput = {
-    create?: XOR<RouteBusStopCreateWithoutNextStopInput, RouteBusStopUncheckedCreateWithoutNextStopInput> | RouteBusStopCreateWithoutNextStopInput[] | RouteBusStopUncheckedCreateWithoutNextStopInput[]
-    connectOrCreate?: RouteBusStopCreateOrConnectWithoutNextStopInput | RouteBusStopCreateOrConnectWithoutNextStopInput[]
-    upsert?: RouteBusStopUpsertWithWhereUniqueWithoutNextStopInput | RouteBusStopUpsertWithWhereUniqueWithoutNextStopInput[]
-    createMany?: RouteBusStopCreateManyNextStopInputEnvelope
-    set?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
-    disconnect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
-    delete?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
-    connect?: RouteBusStopWhereUniqueInput | RouteBusStopWhereUniqueInput[]
-    update?: RouteBusStopUpdateWithWhereUniqueWithoutNextStopInput | RouteBusStopUpdateWithWhereUniqueWithoutNextStopInput[]
-    updateMany?: RouteBusStopUpdateManyWithWhereWithoutNextStopInput | RouteBusStopUpdateManyWithWhereWithoutNextStopInput[]
-    deleteMany?: RouteBusStopScalarWhereInput | RouteBusStopScalarWhereInput[]
   }
 
   export type RouteBusStopUncheckedUpdateManyWithoutRouteNestedInput = {
@@ -20925,10 +20925,10 @@ export namespace Prisma {
     connect?: BusStopWhereUniqueInput
   }
 
-  export type RouteCreateNestedOneWithoutNextStopInput = {
-    create?: XOR<RouteCreateWithoutNextStopInput, RouteUncheckedCreateWithoutNextStopInput>
-    connectOrCreate?: RouteCreateOrConnectWithoutNextStopInput
-    connect?: RouteWhereUniqueInput
+  export type BusStopCreateNestedOneWithoutNextStopInput = {
+    create?: XOR<BusStopCreateWithoutNextStopInput, BusStopUncheckedCreateWithoutNextStopInput>
+    connectOrCreate?: BusStopCreateOrConnectWithoutNextStopInput
+    connect?: BusStopWhereUniqueInput
   }
 
   export type RouteUpdateOneRequiredWithoutRouteBusStopNestedInput = {
@@ -20947,12 +20947,12 @@ export namespace Prisma {
     update?: XOR<XOR<BusStopUpdateToOneWithWhereWithoutRouteBusStopInput, BusStopUpdateWithoutRouteBusStopInput>, BusStopUncheckedUpdateWithoutRouteBusStopInput>
   }
 
-  export type RouteUpdateOneRequiredWithoutNextStopNestedInput = {
-    create?: XOR<RouteCreateWithoutNextStopInput, RouteUncheckedCreateWithoutNextStopInput>
-    connectOrCreate?: RouteCreateOrConnectWithoutNextStopInput
-    upsert?: RouteUpsertWithoutNextStopInput
-    connect?: RouteWhereUniqueInput
-    update?: XOR<XOR<RouteUpdateToOneWithWhereWithoutNextStopInput, RouteUpdateWithoutNextStopInput>, RouteUncheckedUpdateWithoutNextStopInput>
+  export type BusStopUpdateOneRequiredWithoutNextStopNestedInput = {
+    create?: XOR<BusStopCreateWithoutNextStopInput, BusStopUncheckedCreateWithoutNextStopInput>
+    connectOrCreate?: BusStopCreateOrConnectWithoutNextStopInput
+    upsert?: BusStopUpsertWithoutNextStopInput
+    connect?: BusStopWhereUniqueInput
+    update?: XOR<XOR<BusStopUpdateToOneWithWhereWithoutNextStopInput, BusStopUpdateWithoutNextStopInput>, BusStopUncheckedUpdateWithoutNextStopInput>
   }
 
   export type BusStopCreateNestedOneWithoutVehiclesInput = {
@@ -21979,7 +21979,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     route: RouteCreateNestedOneWithoutRouteBusStopInput
-    nextStop: RouteCreateNestedOneWithoutNextStopInput
+    nextStop: BusStopCreateNestedOneWithoutNextStopInput
   }
 
   export type RouteBusStopUncheckedCreateWithoutBusStopInput = {
@@ -22031,6 +22031,34 @@ export namespace Prisma {
 
   export type VehicleCreateManyBusStopInputEnvelope = {
     data: VehicleCreateManyBusStopInput | VehicleCreateManyBusStopInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type RouteBusStopCreateWithoutNextStopInput = {
+    stopOrder: number
+    travelTime: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    route: RouteCreateNestedOneWithoutRouteBusStopInput
+    busStop: BusStopCreateNestedOneWithoutRouteBusStopInput
+  }
+
+  export type RouteBusStopUncheckedCreateWithoutNextStopInput = {
+    routeId: number
+    busStopId: number
+    stopOrder: number
+    travelTime: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RouteBusStopCreateOrConnectWithoutNextStopInput = {
+    where: RouteBusStopWhereUniqueInput
+    create: XOR<RouteBusStopCreateWithoutNextStopInput, RouteBusStopUncheckedCreateWithoutNextStopInput>
+  }
+
+  export type RouteBusStopCreateManyNextStopInputEnvelope = {
+    data: RouteBusStopCreateManyNextStopInput | RouteBusStopCreateManyNextStopInput[]
     skipDuplicates?: boolean
   }
 
@@ -22139,32 +22167,20 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Vehicle"> | Date | string
   }
 
-  export type RouteBusStopCreateWithoutNextStopInput = {
-    stopOrder: number
-    travelTime: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    route: RouteCreateNestedOneWithoutRouteBusStopInput
-    busStop: BusStopCreateNestedOneWithoutRouteBusStopInput
-  }
-
-  export type RouteBusStopUncheckedCreateWithoutNextStopInput = {
-    routeId: number
-    busStopId: number
-    stopOrder: number
-    travelTime: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type RouteBusStopCreateOrConnectWithoutNextStopInput = {
+  export type RouteBusStopUpsertWithWhereUniqueWithoutNextStopInput = {
     where: RouteBusStopWhereUniqueInput
+    update: XOR<RouteBusStopUpdateWithoutNextStopInput, RouteBusStopUncheckedUpdateWithoutNextStopInput>
     create: XOR<RouteBusStopCreateWithoutNextStopInput, RouteBusStopUncheckedCreateWithoutNextStopInput>
   }
 
-  export type RouteBusStopCreateManyNextStopInputEnvelope = {
-    data: RouteBusStopCreateManyNextStopInput | RouteBusStopCreateManyNextStopInput[]
-    skipDuplicates?: boolean
+  export type RouteBusStopUpdateWithWhereUniqueWithoutNextStopInput = {
+    where: RouteBusStopWhereUniqueInput
+    data: XOR<RouteBusStopUpdateWithoutNextStopInput, RouteBusStopUncheckedUpdateWithoutNextStopInput>
+  }
+
+  export type RouteBusStopUpdateManyWithWhereWithoutNextStopInput = {
+    where: RouteBusStopScalarWhereInput
+    data: XOR<RouteBusStopUpdateManyMutationInput, RouteBusStopUncheckedUpdateManyWithoutNextStopInput>
   }
 
   export type RouteBusStopCreateWithoutRouteInput = {
@@ -22173,7 +22189,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     busStop: BusStopCreateNestedOneWithoutRouteBusStopInput
-    nextStop: RouteCreateNestedOneWithoutNextStopInput
+    nextStop: BusStopCreateNestedOneWithoutNextStopInput
   }
 
   export type RouteBusStopUncheckedCreateWithoutRouteInput = {
@@ -22252,22 +22268,6 @@ export namespace Prisma {
   export type VehicleCreateOrConnectWithoutRouteInput = {
     where: VehicleWhereUniqueInput
     create: XOR<VehicleCreateWithoutRouteInput, VehicleUncheckedCreateWithoutRouteInput>
-  }
-
-  export type RouteBusStopUpsertWithWhereUniqueWithoutNextStopInput = {
-    where: RouteBusStopWhereUniqueInput
-    update: XOR<RouteBusStopUpdateWithoutNextStopInput, RouteBusStopUncheckedUpdateWithoutNextStopInput>
-    create: XOR<RouteBusStopCreateWithoutNextStopInput, RouteBusStopUncheckedCreateWithoutNextStopInput>
-  }
-
-  export type RouteBusStopUpdateWithWhereUniqueWithoutNextStopInput = {
-    where: RouteBusStopWhereUniqueInput
-    data: XOR<RouteBusStopUpdateWithoutNextStopInput, RouteBusStopUncheckedUpdateWithoutNextStopInput>
-  }
-
-  export type RouteBusStopUpdateManyWithWhereWithoutNextStopInput = {
-    where: RouteBusStopScalarWhereInput
-    data: XOR<RouteBusStopUpdateManyMutationInput, RouteBusStopUncheckedUpdateManyWithoutNextStopInput>
   }
 
   export type RouteBusStopUpsertWithWhereUniqueWithoutRouteInput = {
@@ -22386,7 +22386,6 @@ export namespace Prisma {
     overallTravelTime: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    NextStop?: RouteBusStopCreateNestedManyWithoutNextStopInput
     VehicleRouteSchedule?: VehicleRouteScheduleCreateNestedManyWithoutRouteInput
     Vehicle?: VehicleCreateNestedManyWithoutRouteInput
   }
@@ -22397,7 +22396,6 @@ export namespace Prisma {
     overallTravelTime: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    NextStop?: RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput
     VehicleRouteSchedule?: VehicleRouteScheduleUncheckedCreateNestedManyWithoutRouteInput
     Vehicle?: VehicleUncheckedCreateNestedManyWithoutRouteInput
   }
@@ -22416,6 +22414,7 @@ export namespace Prisma {
     BookingDestination?: BookingCreateNestedManyWithoutDestinationStopInput
     BookingOrigin?: BookingCreateNestedManyWithoutOriginStopInput
     vehicles?: VehicleCreateNestedManyWithoutBusStopInput
+    NextStop?: RouteBusStopCreateNestedManyWithoutNextStopInput
   }
 
   export type BusStopUncheckedCreateWithoutRouteBusStopInput = {
@@ -22428,6 +22427,7 @@ export namespace Prisma {
     BookingDestination?: BookingUncheckedCreateNestedManyWithoutDestinationStopInput
     BookingOrigin?: BookingUncheckedCreateNestedManyWithoutOriginStopInput
     vehicles?: VehicleUncheckedCreateNestedManyWithoutBusStopInput
+    NextStop?: RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput
   }
 
   export type BusStopCreateOrConnectWithoutRouteBusStopInput = {
@@ -22435,30 +22435,34 @@ export namespace Prisma {
     create: XOR<BusStopCreateWithoutRouteBusStopInput, BusStopUncheckedCreateWithoutRouteBusStopInput>
   }
 
-  export type RouteCreateWithoutNextStopInput = {
-    routeName: string
-    overallTravelTime: number
+  export type BusStopCreateWithoutNextStopInput = {
+    stopName: string
+    lat: number
+    lng: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    RouteBusStop?: RouteBusStopCreateNestedManyWithoutRouteInput
-    VehicleRouteSchedule?: VehicleRouteScheduleCreateNestedManyWithoutRouteInput
-    Vehicle?: VehicleCreateNestedManyWithoutRouteInput
+    BookingDestination?: BookingCreateNestedManyWithoutDestinationStopInput
+    BookingOrigin?: BookingCreateNestedManyWithoutOriginStopInput
+    RouteBusStop?: RouteBusStopCreateNestedManyWithoutBusStopInput
+    vehicles?: VehicleCreateNestedManyWithoutBusStopInput
   }
 
-  export type RouteUncheckedCreateWithoutNextStopInput = {
-    routeId?: number
-    routeName: string
-    overallTravelTime: number
+  export type BusStopUncheckedCreateWithoutNextStopInput = {
+    busStopId?: number
+    stopName: string
+    lat: number
+    lng: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    RouteBusStop?: RouteBusStopUncheckedCreateNestedManyWithoutRouteInput
-    VehicleRouteSchedule?: VehicleRouteScheduleUncheckedCreateNestedManyWithoutRouteInput
-    Vehicle?: VehicleUncheckedCreateNestedManyWithoutRouteInput
+    BookingDestination?: BookingUncheckedCreateNestedManyWithoutDestinationStopInput
+    BookingOrigin?: BookingUncheckedCreateNestedManyWithoutOriginStopInput
+    RouteBusStop?: RouteBusStopUncheckedCreateNestedManyWithoutBusStopInput
+    vehicles?: VehicleUncheckedCreateNestedManyWithoutBusStopInput
   }
 
-  export type RouteCreateOrConnectWithoutNextStopInput = {
-    where: RouteWhereUniqueInput
-    create: XOR<RouteCreateWithoutNextStopInput, RouteUncheckedCreateWithoutNextStopInput>
+  export type BusStopCreateOrConnectWithoutNextStopInput = {
+    where: BusStopWhereUniqueInput
+    create: XOR<BusStopCreateWithoutNextStopInput, BusStopUncheckedCreateWithoutNextStopInput>
   }
 
   export type RouteUpsertWithoutRouteBusStopInput = {
@@ -22477,7 +22481,6 @@ export namespace Prisma {
     overallTravelTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    NextStop?: RouteBusStopUpdateManyWithoutNextStopNestedInput
     VehicleRouteSchedule?: VehicleRouteScheduleUpdateManyWithoutRouteNestedInput
     Vehicle?: VehicleUpdateManyWithoutRouteNestedInput
   }
@@ -22488,7 +22491,6 @@ export namespace Prisma {
     overallTravelTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    NextStop?: RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput
     VehicleRouteSchedule?: VehicleRouteScheduleUncheckedUpdateManyWithoutRouteNestedInput
     Vehicle?: VehicleUncheckedUpdateManyWithoutRouteNestedInput
   }
@@ -22513,6 +22515,7 @@ export namespace Prisma {
     BookingDestination?: BookingUpdateManyWithoutDestinationStopNestedInput
     BookingOrigin?: BookingUpdateManyWithoutOriginStopNestedInput
     vehicles?: VehicleUpdateManyWithoutBusStopNestedInput
+    NextStop?: RouteBusStopUpdateManyWithoutNextStopNestedInput
   }
 
   export type BusStopUncheckedUpdateWithoutRouteBusStopInput = {
@@ -22525,38 +22528,43 @@ export namespace Prisma {
     BookingDestination?: BookingUncheckedUpdateManyWithoutDestinationStopNestedInput
     BookingOrigin?: BookingUncheckedUpdateManyWithoutOriginStopNestedInput
     vehicles?: VehicleUncheckedUpdateManyWithoutBusStopNestedInput
+    NextStop?: RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput
   }
 
-  export type RouteUpsertWithoutNextStopInput = {
-    update: XOR<RouteUpdateWithoutNextStopInput, RouteUncheckedUpdateWithoutNextStopInput>
-    create: XOR<RouteCreateWithoutNextStopInput, RouteUncheckedCreateWithoutNextStopInput>
-    where?: RouteWhereInput
+  export type BusStopUpsertWithoutNextStopInput = {
+    update: XOR<BusStopUpdateWithoutNextStopInput, BusStopUncheckedUpdateWithoutNextStopInput>
+    create: XOR<BusStopCreateWithoutNextStopInput, BusStopUncheckedCreateWithoutNextStopInput>
+    where?: BusStopWhereInput
   }
 
-  export type RouteUpdateToOneWithWhereWithoutNextStopInput = {
-    where?: RouteWhereInput
-    data: XOR<RouteUpdateWithoutNextStopInput, RouteUncheckedUpdateWithoutNextStopInput>
+  export type BusStopUpdateToOneWithWhereWithoutNextStopInput = {
+    where?: BusStopWhereInput
+    data: XOR<BusStopUpdateWithoutNextStopInput, BusStopUncheckedUpdateWithoutNextStopInput>
   }
 
-  export type RouteUpdateWithoutNextStopInput = {
-    routeName?: StringFieldUpdateOperationsInput | string
-    overallTravelTime?: IntFieldUpdateOperationsInput | number
+  export type BusStopUpdateWithoutNextStopInput = {
+    stopName?: StringFieldUpdateOperationsInput | string
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    RouteBusStop?: RouteBusStopUpdateManyWithoutRouteNestedInput
-    VehicleRouteSchedule?: VehicleRouteScheduleUpdateManyWithoutRouteNestedInput
-    Vehicle?: VehicleUpdateManyWithoutRouteNestedInput
+    BookingDestination?: BookingUpdateManyWithoutDestinationStopNestedInput
+    BookingOrigin?: BookingUpdateManyWithoutOriginStopNestedInput
+    RouteBusStop?: RouteBusStopUpdateManyWithoutBusStopNestedInput
+    vehicles?: VehicleUpdateManyWithoutBusStopNestedInput
   }
 
-  export type RouteUncheckedUpdateWithoutNextStopInput = {
-    routeId?: IntFieldUpdateOperationsInput | number
-    routeName?: StringFieldUpdateOperationsInput | string
-    overallTravelTime?: IntFieldUpdateOperationsInput | number
+  export type BusStopUncheckedUpdateWithoutNextStopInput = {
+    busStopId?: IntFieldUpdateOperationsInput | number
+    stopName?: StringFieldUpdateOperationsInput | string
+    lat?: FloatFieldUpdateOperationsInput | number
+    lng?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    RouteBusStop?: RouteBusStopUncheckedUpdateManyWithoutRouteNestedInput
-    VehicleRouteSchedule?: VehicleRouteScheduleUncheckedUpdateManyWithoutRouteNestedInput
-    Vehicle?: VehicleUncheckedUpdateManyWithoutRouteNestedInput
+    BookingDestination?: BookingUncheckedUpdateManyWithoutDestinationStopNestedInput
+    BookingOrigin?: BookingUncheckedUpdateManyWithoutOriginStopNestedInput
+    RouteBusStop?: RouteBusStopUncheckedUpdateManyWithoutBusStopNestedInput
+    vehicles?: VehicleUncheckedUpdateManyWithoutBusStopNestedInput
   }
 
   export type BusStopCreateWithoutVehiclesInput = {
@@ -22568,6 +22576,7 @@ export namespace Prisma {
     BookingDestination?: BookingCreateNestedManyWithoutDestinationStopInput
     BookingOrigin?: BookingCreateNestedManyWithoutOriginStopInput
     RouteBusStop?: RouteBusStopCreateNestedManyWithoutBusStopInput
+    NextStop?: RouteBusStopCreateNestedManyWithoutNextStopInput
   }
 
   export type BusStopUncheckedCreateWithoutVehiclesInput = {
@@ -22580,6 +22589,7 @@ export namespace Prisma {
     BookingDestination?: BookingUncheckedCreateNestedManyWithoutDestinationStopInput
     BookingOrigin?: BookingUncheckedCreateNestedManyWithoutOriginStopInput
     RouteBusStop?: RouteBusStopUncheckedCreateNestedManyWithoutBusStopInput
+    NextStop?: RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput
   }
 
   export type BusStopCreateOrConnectWithoutVehiclesInput = {
@@ -22643,7 +22653,6 @@ export namespace Prisma {
     overallTravelTime: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    NextStop?: RouteBusStopCreateNestedManyWithoutNextStopInput
     RouteBusStop?: RouteBusStopCreateNestedManyWithoutRouteInput
     VehicleRouteSchedule?: VehicleRouteScheduleCreateNestedManyWithoutRouteInput
   }
@@ -22654,7 +22663,6 @@ export namespace Prisma {
     overallTravelTime: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    NextStop?: RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput
     RouteBusStop?: RouteBusStopUncheckedCreateNestedManyWithoutRouteInput
     VehicleRouteSchedule?: VehicleRouteScheduleUncheckedCreateNestedManyWithoutRouteInput
   }
@@ -22684,6 +22692,7 @@ export namespace Prisma {
     BookingDestination?: BookingUpdateManyWithoutDestinationStopNestedInput
     BookingOrigin?: BookingUpdateManyWithoutOriginStopNestedInput
     RouteBusStop?: RouteBusStopUpdateManyWithoutBusStopNestedInput
+    NextStop?: RouteBusStopUpdateManyWithoutNextStopNestedInput
   }
 
   export type BusStopUncheckedUpdateWithoutVehiclesInput = {
@@ -22696,6 +22705,7 @@ export namespace Prisma {
     BookingDestination?: BookingUncheckedUpdateManyWithoutDestinationStopNestedInput
     BookingOrigin?: BookingUncheckedUpdateManyWithoutOriginStopNestedInput
     RouteBusStop?: RouteBusStopUncheckedUpdateManyWithoutBusStopNestedInput
+    NextStop?: RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput
   }
 
   export type VehicleTypeUpsertWithoutVehicleInput = {
@@ -22802,7 +22812,6 @@ export namespace Prisma {
     overallTravelTime: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    NextStop?: RouteBusStopCreateNestedManyWithoutNextStopInput
     RouteBusStop?: RouteBusStopCreateNestedManyWithoutRouteInput
     Vehicle?: VehicleCreateNestedManyWithoutRouteInput
   }
@@ -22813,7 +22822,6 @@ export namespace Prisma {
     overallTravelTime: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    NextStop?: RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput
     RouteBusStop?: RouteBusStopUncheckedCreateNestedManyWithoutRouteInput
     Vehicle?: VehicleUncheckedCreateNestedManyWithoutRouteInput
   }
@@ -22932,7 +22940,6 @@ export namespace Prisma {
     overallTravelTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    NextStop?: RouteBusStopUpdateManyWithoutNextStopNestedInput
     RouteBusStop?: RouteBusStopUpdateManyWithoutRouteNestedInput
     Vehicle?: VehicleUpdateManyWithoutRouteNestedInput
   }
@@ -22943,7 +22950,6 @@ export namespace Prisma {
     overallTravelTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    NextStop?: RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput
     RouteBusStop?: RouteBusStopUncheckedUpdateManyWithoutRouteNestedInput
     Vehicle?: VehicleUncheckedUpdateManyWithoutRouteNestedInput
   }
@@ -23191,6 +23197,7 @@ export namespace Prisma {
     BookingOrigin?: BookingCreateNestedManyWithoutOriginStopInput
     RouteBusStop?: RouteBusStopCreateNestedManyWithoutBusStopInput
     vehicles?: VehicleCreateNestedManyWithoutBusStopInput
+    NextStop?: RouteBusStopCreateNestedManyWithoutNextStopInput
   }
 
   export type BusStopUncheckedCreateWithoutBookingDestinationInput = {
@@ -23203,6 +23210,7 @@ export namespace Prisma {
     BookingOrigin?: BookingUncheckedCreateNestedManyWithoutOriginStopInput
     RouteBusStop?: RouteBusStopUncheckedCreateNestedManyWithoutBusStopInput
     vehicles?: VehicleUncheckedCreateNestedManyWithoutBusStopInput
+    NextStop?: RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput
   }
 
   export type BusStopCreateOrConnectWithoutBookingDestinationInput = {
@@ -23219,6 +23227,7 @@ export namespace Prisma {
     BookingDestination?: BookingCreateNestedManyWithoutDestinationStopInput
     RouteBusStop?: RouteBusStopCreateNestedManyWithoutBusStopInput
     vehicles?: VehicleCreateNestedManyWithoutBusStopInput
+    NextStop?: RouteBusStopCreateNestedManyWithoutNextStopInput
   }
 
   export type BusStopUncheckedCreateWithoutBookingOriginInput = {
@@ -23231,6 +23240,7 @@ export namespace Prisma {
     BookingDestination?: BookingUncheckedCreateNestedManyWithoutDestinationStopInput
     RouteBusStop?: RouteBusStopUncheckedCreateNestedManyWithoutBusStopInput
     vehicles?: VehicleUncheckedCreateNestedManyWithoutBusStopInput
+    NextStop?: RouteBusStopUncheckedCreateNestedManyWithoutNextStopInput
   }
 
   export type BusStopCreateOrConnectWithoutBookingOriginInput = {
@@ -23314,6 +23324,7 @@ export namespace Prisma {
     BookingOrigin?: BookingUpdateManyWithoutOriginStopNestedInput
     RouteBusStop?: RouteBusStopUpdateManyWithoutBusStopNestedInput
     vehicles?: VehicleUpdateManyWithoutBusStopNestedInput
+    NextStop?: RouteBusStopUpdateManyWithoutNextStopNestedInput
   }
 
   export type BusStopUncheckedUpdateWithoutBookingDestinationInput = {
@@ -23326,6 +23337,7 @@ export namespace Prisma {
     BookingOrigin?: BookingUncheckedUpdateManyWithoutOriginStopNestedInput
     RouteBusStop?: RouteBusStopUncheckedUpdateManyWithoutBusStopNestedInput
     vehicles?: VehicleUncheckedUpdateManyWithoutBusStopNestedInput
+    NextStop?: RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput
   }
 
   export type BusStopUpsertWithoutBookingOriginInput = {
@@ -23348,6 +23360,7 @@ export namespace Prisma {
     BookingDestination?: BookingUpdateManyWithoutDestinationStopNestedInput
     RouteBusStop?: RouteBusStopUpdateManyWithoutBusStopNestedInput
     vehicles?: VehicleUpdateManyWithoutBusStopNestedInput
+    NextStop?: RouteBusStopUpdateManyWithoutNextStopNestedInput
   }
 
   export type BusStopUncheckedUpdateWithoutBookingOriginInput = {
@@ -23360,6 +23373,7 @@ export namespace Prisma {
     BookingDestination?: BookingUncheckedUpdateManyWithoutDestinationStopNestedInput
     RouteBusStop?: RouteBusStopUncheckedUpdateManyWithoutBusStopNestedInput
     vehicles?: VehicleUncheckedUpdateManyWithoutBusStopNestedInput
+    NextStop?: RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput
   }
 
   export type UserUpsertWithoutBookingInput = {
@@ -23640,6 +23654,15 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type RouteBusStopCreateManyNextStopInput = {
+    routeId: number
+    busStopId: number
+    stopOrder: number
+    travelTime: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type BookingUpdateWithoutDestinationStopInput = {
     status?: EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23704,7 +23727,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     route?: RouteUpdateOneRequiredWithoutRouteBusStopNestedInput
-    nextStop?: RouteUpdateOneRequiredWithoutNextStopNestedInput
+    nextStop?: BusStopUpdateOneRequiredWithoutNextStopNestedInput
   }
 
   export type RouteBusStopUncheckedUpdateWithoutBusStopInput = {
@@ -23758,34 +23781,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type RouteBusStopCreateManyNextStopInput = {
-    routeId: number
-    busStopId: number
-    stopOrder: number
-    travelTime: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type RouteBusStopCreateManyRouteInput = {
-    busStopId: number
-    nextStopId: number
-    stopOrder: number
-    travelTime: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type VehicleRouteScheduleCreateManyRouteInput = {
-    vehicleRouteScheduleId?: number
-    vehicleId: number
-    driverId: number
-    scheduleTime: Date | string
-    status?: $Enums.RouteStatus
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
   export type RouteBusStopUpdateWithoutNextStopInput = {
     stopOrder?: IntFieldUpdateOperationsInput | number
     travelTime?: IntFieldUpdateOperationsInput | number
@@ -23813,13 +23808,32 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type RouteBusStopCreateManyRouteInput = {
+    busStopId: number
+    nextStopId: number
+    stopOrder: number
+    travelTime: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VehicleRouteScheduleCreateManyRouteInput = {
+    vehicleRouteScheduleId?: number
+    vehicleId: number
+    driverId: number
+    scheduleTime: Date | string
+    status?: $Enums.RouteStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type RouteBusStopUpdateWithoutRouteInput = {
     stopOrder?: IntFieldUpdateOperationsInput | number
     travelTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     busStop?: BusStopUpdateOneRequiredWithoutRouteBusStopNestedInput
-    nextStop?: RouteUpdateOneRequiredWithoutNextStopNestedInput
+    nextStop?: BusStopUpdateOneRequiredWithoutNextStopNestedInput
   }
 
   export type RouteBusStopUncheckedUpdateWithoutRouteInput = {
@@ -23994,7 +24008,6 @@ export namespace Prisma {
     overallTravelTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    NextStop?: RouteBusStopUpdateManyWithoutNextStopNestedInput
     RouteBusStop?: RouteBusStopUpdateManyWithoutRouteNestedInput
     VehicleRouteSchedule?: VehicleRouteScheduleUpdateManyWithoutRouteNestedInput
   }
@@ -24005,7 +24018,6 @@ export namespace Prisma {
     overallTravelTime?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    NextStop?: RouteBusStopUncheckedUpdateManyWithoutNextStopNestedInput
     RouteBusStop?: RouteBusStopUncheckedUpdateManyWithoutRouteNestedInput
     VehicleRouteSchedule?: VehicleRouteScheduleUncheckedUpdateManyWithoutRouteNestedInput
   }

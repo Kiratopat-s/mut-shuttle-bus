@@ -70,19 +70,19 @@ INSERT INTO vehicles (vehicle_type_id, current_stop_id, license_plate, capacity,
 (2, 1, 'กก 6666 กทม', 30, 'ACTIVE');
 
 INSERT INTO route_bus_stops (route_id, bus_stop_id, next_stop_id, stop_order, travel_time) VALUES
-(1,1, 2, 0, 5),
-(1,2, 3, 1, 3),
-(1,3, 4, 2, 6),
-(1,4, 3, 3, 3),
-(1,3, 2, 4, 3),
-(1,2, 1, 5, 10),
-(2,1, 2, 0, 5),
-(2,2, 5, 1, 3),
-(2,5, 6, 2, 5),
-(3,4, 2, 0, 5),
-(3,2, 5, 1, 3),
-(3,5, 6, 2, 5),
-(3,6, 1, 3, 2);
+(1, 1, 2, 0, 5),
+(1, 2, 3, 1, 3),
+(1, 3, 4, 2, 6),
+(1, 4, 3, 3, 3),
+(1, 3, 2, 4, 3),
+(1, 2, 1, 5, 10),
+(2, 1, 2, 0, 5),
+(2, 2, 5, 1, 3),
+(2, 5, 6, 2, 5),
+(3, 4, 2, 0, 5),
+(3, 2, 5, 1, 3),
+(3, 5, 6, 2, 5),
+(3, 6, 1, 3, 2);
 
 INSERT INTO vehicle_route_schedules (vehicle_id, route_id, driver_id, schedule_time, status) VALUES
 (1, 1, 4, '2025-09-30 08:00:00'::timestamp,  'CANCELLED'),
