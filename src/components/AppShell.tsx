@@ -5,7 +5,7 @@ import Footer from "@/components/footer";
 import { Upper } from "@/components/upper";
 import { Suspense, useEffect } from "react";
 import { UpperSkeleton, LoadingSkeleton } from "@/components/skeletons";
-import { UserInformation, useUserInformation } from "@/provider/UserProvider";
+import { useUserInformation } from "@/provider/UserProvider";
 import Loading from "./loading/Loading";
 
 interface AppShellProps {
@@ -17,23 +17,6 @@ export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
 
   const { user, isLoading } = useUserInformation();
-  const MockUser: UserInformation = {
-    userId: 1,
-    roleId: 1,
-    firstName: "John",
-    lastName: "Doe",
-    email: "john@gmail.com",
-    password: "hashedpassword",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    role: {
-      roleId: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      roleName: "User",
-    },
-    employee: null,
-  };
 
   const authPages = [
     "/auth/login",
@@ -43,6 +26,12 @@ export default function AppShell({ children }: AppShellProps) {
     "/booking/guest-details",
   ];
   const isAuthPage = authPages.includes(pathname);
+
+  useEffect(() => {
+    if (!isAuthPage && !user && !isLoading) {
+      router.push("/auth/login");
+    }
+  }, [user, isLoading, router, isAuthPage]);
 
   if (isAuthPage) {
     return (
@@ -55,12 +44,6 @@ export default function AppShell({ children }: AppShellProps) {
   if (isLoading) {
     return <Loading title="Loading..." />;
   }
-
-  useEffect(() => {
-    if (!user && !isLoading) {
-      router.push("/auth/login");
-    }
-  }, [user, isLoading, router]);
 
   if (!user) {
     return <Loading title="Redirecting..." />;
