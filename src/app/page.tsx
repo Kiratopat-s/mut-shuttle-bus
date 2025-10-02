@@ -31,7 +31,7 @@ function HomeContent() {
 
       {/* แสดง CarouselCheckIn เฉพาะผู้ใช้ที่ไม่ใช่ driver */}
       {!isDriver && (
-        <div className="p-2 bg-red-900 rounded-xl w-full max-w-lg">
+        <div className="p-2 bg-red-900 rounded-xl w-full max-w-sm">
           <CarouselCheckIn onOpenQrModal={handleOpenQrModal} />
         </div>
       )}
@@ -44,10 +44,10 @@ function HomeContent() {
 function HomeLoading() {
   return (
     <div className="flex min-h-screen flex-col items-center w-full p-2 gap-12">
-      <div className="p-2 bg-gray-200 rounded-xl w-full max-w-lg animate-pulse">
+      <div className="p-2 bg-gray-200 rounded-xl w-full max-w-sm animate-pulse">
         <div className="h-48 bg-gray-300 rounded-lg"></div>
       </div>
-      <div className="w-full max-w-lg space-y-4">
+      <div className="w-full max-w-sm space-y-4">
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}

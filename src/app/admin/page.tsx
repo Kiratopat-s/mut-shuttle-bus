@@ -283,7 +283,7 @@ export default function AdminPage() {
           />
 
           {/* Modal */}
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 slide-in-from-bottom-4 duration-200">
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-in zoom-in-95 slide-in-from-bottom-4 duration-200">
             {/* Header with gradient */}
             <div className="relative bg-gradient-to-r from-red-500 to-pink-500 px-6 py-4 rounded-t-2xl">
               <div className="flex items-center justify-between">

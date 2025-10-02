@@ -51,7 +51,7 @@ function HomeVariant() {
       </div>
 
       {/* Main menu skeleton */}
-      <div className="space-y-4 w-full max-w-lg">
+      <div className="space-y-4 w-full max-w-sm">
         <div className="grid grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="p-4 border rounded-lg space-y-3">
@@ -67,7 +67,7 @@ function HomeVariant() {
 
 function BookingVariant() {
   return (
-    <div className="space-y-6 w-full max-w-lg">
+    <div className="space-y-6 w-full max-w-sm">
       <Skeleton className="h-8 w-48 mx-auto" />
       <div className="space-y-4">
         <div className="space-y-2">
@@ -90,7 +90,7 @@ function BookingVariant() {
 
 function RoutesVariant() {
   return (
-    <div className="space-y-4 w-full max-w-lg">
+    <div className="space-y-4 w-full max-w-sm">
       <Skeleton className="h-8 w-32 mx-auto" />
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -113,7 +113,7 @@ function RoutesVariant() {
 
 function ProfileVariant() {
   return (
-    <div className="space-y-6 w-full max-w-lg">
+    <div className="space-y-6 w-full max-w-sm">
       <div className="flex flex-col items-center space-y-4">
         <Skeleton className="h-24 w-24 rounded-full" />
         <div className="text-center space-y-2">
@@ -138,7 +138,7 @@ function ProfileVariant() {
 
 function AdminVariant() {
   return (
-    <div className="space-y-6 w-full max-w-lg">
+    <div className="space-y-6 w-full max-w-sm">
       <Skeleton className="h-8 w-40 mx-auto" />
       <div className="grid grid-cols-1 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -157,7 +157,7 @@ function AdminVariant() {
 
 function DefaultVariant() {
   return (
-    <div className="flex flex-col space-y-4 p-4 w-full max-w-lg">
+    <div className="flex flex-col space-y-4 p-4 w-full max-w-sm">
       <div className="flex items-center space-x-4">
         <Skeleton className="h-12 w-12 rounded-full" />
         <div className="space-y-2">

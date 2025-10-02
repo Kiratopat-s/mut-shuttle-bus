@@ -32,7 +32,7 @@ export function HomePageSkeleton() {
       </div>
 
       {/* Main menu skeleton - matches HomeMainMenu */}
-      <div className="space-y-4 w-full max-w-lg">
+      <div className="space-y-4 w-full max-w-sm">
         <div className="grid grid-cols-2 gap-4">
           {/* Menu item skeletons */}
           {Array.from({ length: 4 }).map((_, i) => (
