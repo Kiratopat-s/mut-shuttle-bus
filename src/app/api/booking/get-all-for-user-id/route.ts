@@ -75,7 +75,18 @@ export async function GET(req: NextRequest) {
                 },
                 vehicleRouteSchedule: {
                     include: {
-                        route: true,
+                        route: {
+                            include: {
+                                RouteBusStop: {
+                                    orderBy: {
+                                        stopOrder: "asc",
+                                    },
+                                    include: {
+                                        busStop: true,
+                                    },
+                                },
+                            },
+                        },
                         vehicle: {
                             include: {
                                 vehicleType: true,

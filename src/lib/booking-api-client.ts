@@ -35,6 +35,16 @@ export interface Route {
     routeId: number;
     routeName: string;
     overallTravelTime: number;
+    RouteBusStop?: RouteBusStop[];
+}
+
+export interface RouteBusStop {
+    routeBusStopId: number;
+    routeId: number;
+    busStopId: number;
+    stopOrder: number;
+    travelTime: number;
+    busStop: BusStop;
 }
 
 export interface VehicleType {

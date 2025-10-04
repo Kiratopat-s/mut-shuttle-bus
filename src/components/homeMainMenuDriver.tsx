@@ -1,10 +1,4 @@
-import {
-  Bus,
-  MapPin,
-  Users,
-  Clock,
-  LayoutDashboard
-} from "lucide-react";
+import { Bus, MapPin } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
@@ -21,7 +15,6 @@ const DriverMenu: HomeMenu[] = [
     icon: <MapPin />,
     link: "/driver/",
   },
-  
 ];
 
 function HomeMainMenuDriver() {
@@ -36,7 +29,7 @@ function HomeMainMenuDriver() {
           จัดการเส้นทางและผู้โดยสารของคุณ
         </p>
       </div>
-      
+
       {DriverMenu.map((menu) => (
         <Link
           href={menu.link}
@@ -44,9 +37,7 @@ function HomeMainMenuDriver() {
           className="flex flex-row gap-4 items-center border border-gray-300 rounded-lg p-4 hover:bg-blue-50 hover:border-blue-300 transition-colors"
           onClick={menu.onclick}
         >
-          <div className="text-blue-600">
-            {menu.icon}
-          </div>
+          <div className="text-blue-600">{menu.icon}</div>
           <p className="text-gray-700">{menu.name}</p>
         </Link>
       ))}

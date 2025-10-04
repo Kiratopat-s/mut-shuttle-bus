@@ -60,67 +60,124 @@ function ResultConfirmationPageContent() {
   );
 
   useEffect(() => {
-    // Simulate API call to fetch booking result
+    // Fetch booking result from API
     const fetchBookingResult = async () => {
       setIsLoading(true);
 
       try {
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        // Generate individual booking IDs for each guest
-        const baseBookingId = bookingId || "BMT-2024-001234";
-        const mockGuests = [
-          {
-            email: "john.doe@example.com",
-            firstName: "John",
-            lastName: "Doe",
-            phoneNumber: "0812345678",
-          },
-          {
-            email: "jane.smith@example.com",
-            firstName: "Jane",
-            lastName: "Smith",
-            phoneNumber: "0823456789",
-          },
-        ];
-
-        // Create guests with individual booking IDs
-        const guestsWithBookingIds = mockGuests.map((guest, index) => ({
-          ...guest,
-          bookingId:
-            index === 0 ? baseBookingId : `${baseBookingId}-${index + 1}`,
-          isMainBooking: index === 0,
-        }));
-
-        // Mock booking result based on query params
-        const mockResult: BookingResult = {
-          status: status === "error" ? "error" : "success",
-          mainBookingId: baseBookingId,
-          timestamp: new Date(),
-          trip: {
-            vehicleRouteScheduleId: "1",
-            vehicle_license_plate: "ป้ายทะเบียน 1",
-            vehicle_type: "Minibus",
-            vehicle_seat: 25,
-            vehicle_route_start_time: "09:30",
-            vehicle_route_end_time: "10:15",
-            vehicle_route_duration: "45 min",
-            available_seat: 25,
-            origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-            destination: "Big C หนองจอก",
-          },
-          guests: guestsWithBookingIds,
-        };
-
-        // Add error details if status is error
         if (status === "error") {
-          mockResult.errorCode = errorCode || "BOOKING_FAILED";
-          mockResult.errorMessage = getErrorMessage(mockResult.errorCode);
-          mockResult.errorDetails = getErrorDetails(mockResult.errorCode);
-        }
+          // Handle error case - no API call needed
+          const errorCodeValue = errorCode || "BOOKING_FAILED";
+          setBookingResult({
+            status: "error",
+            errorCode: errorCodeValue,
+            errorMessage: getErrorMessage(errorCodeValue),
+            errorDetails: getErrorDetails(errorCodeValue),
+            timestamp: new Date(),
+          });
+        } else if (bookingId) {
+          // Fetch booking details from API
+          const response = await fetch(
+            `/api/booking/get-by-booking-id?bookingId=${bookingId}`,
+            {
+              credentials: "include",
+            }
+          );
 
-        setBookingResult(mockResult);
+          if (!response.ok) {
+            throw new Error("Failed to fetch booking details");
+          }
+
+          const result = await response.json();
+
+          if (!result.success || !result.data) {
+            throw new Error(result.error || "Failed to load booking");
+          }
+
+          const booking = result.data;
+
+          // Calculate actual start and end times based on route stops
+          const route = booking.vehicleRouteSchedule.route;
+          const routeStartTime = new Date(
+            booking.vehicleRouteSchedule.scheduleTime
+          );
+
+          // Find origin and destination stop indices
+          const originStopIndex = route.RouteBusStop.findIndex(
+            (rbs: { busStopId: number }) =>
+              rbs.busStopId === booking.originStopId
+          );
+          const destinationStopIndex = route.RouteBusStop.findIndex(
+            (rbs: { busStopId: number }) =>
+              rbs.busStopId === booking.destinationStopId
+          );
+
+          // Calculate time to reach origin stop
+          let timeToOrigin = 0;
+          for (let i = 0; i < originStopIndex; i++) {
+            timeToOrigin += route.RouteBusStop[i].travelTime;
+          }
+
+          // Calculate travel time from origin to destination
+          let travelTime = 0;
+          for (let i = originStopIndex; i < destinationStopIndex; i++) {
+            travelTime += route.RouteBusStop[i].travelTime;
+          }
+
+          // Calculate actual times
+          const userStartTime = new Date(
+            routeStartTime.getTime() + timeToOrigin * 60000
+          );
+          const userEndTime = new Date(
+            userStartTime.getTime() + travelTime * 60000
+          );
+
+          // Format the booking data
+          setBookingResult({
+            status: "success",
+            mainBookingId: bookingId,
+            timestamp: new Date(booking.createdAt),
+            trip: {
+              vehicleRouteScheduleId: booking.vehicleRouteScheduleId.toString(),
+              vehicle_license_plate:
+                booking.vehicleRouteSchedule.vehicle.licensePlate,
+              vehicle_type:
+                booking.vehicleRouteSchedule.vehicle.vehicleType
+                  .VehicleTypeName,
+              vehicle_seat: booking.vehicleRouteSchedule.vehicle.capacity,
+              vehicle_route_start_time: userStartTime.toLocaleTimeString(
+                "th-TH",
+                {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }
+              ),
+              vehicle_route_end_time: userEndTime.toLocaleTimeString("th-TH", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+              }),
+              vehicle_route_duration: `${travelTime} min`,
+              available_seat: 0, // Not relevant after booking
+              origin: booking.originStop.stopName,
+              destination: booking.destinationStop.stopName,
+            },
+            guests: [
+              {
+                bookingId: bookingId,
+                email: booking.user.email,
+                firstName: booking.user.firstName,
+                lastName: booking.user.lastName,
+                phoneNumber: booking.user.phoneNumber || "Not provided",
+                isMainBooking: true,
+              },
+            ],
+          });
+        } else {
+          // No booking ID and not an error
+          throw new Error("Missing booking information");
+        }
       } catch (error) {
         console.error("Error fetching booking result:", error);
         setBookingResult({
@@ -141,6 +198,8 @@ function ResultConfirmationPageContent() {
 
   const getErrorMessage = (code: string): string => {
     switch (code) {
+      case "DUPLICATE_BOOKING":
+        return "You already have a booking for this trip";
       case "BOOKING_FAILED":
         return "Booking could not be completed";
       case "SEAT_UNAVAILABLE":
@@ -160,6 +219,8 @@ function ResultConfirmationPageContent() {
 
   const getErrorDetails = (code: string): string => {
     switch (code) {
+      case "DUPLICATE_BOOKING":
+        return "You already have an active booking for this schedule. Each user can only book once per trip. Please check your bookings or contact support if you believe this is an error.";
       case "BOOKING_FAILED":
         return "The booking system encountered an error while processing your reservation. This may be due to high demand or a temporary system issue.";
       case "SEAT_UNAVAILABLE":
@@ -178,7 +239,11 @@ function ResultConfirmationPageContent() {
   };
 
   const handleRetry = () => {
-    router.push("/booking/guest-details");
+    router.push("/booking/search");
+  };
+
+  const handleViewMyBookings = () => {
+    router.push("/my-bookings");
   };
 
   const handleNewBooking = () => {
@@ -270,12 +335,31 @@ function ResultConfirmationPageContent() {
             </>
           ) : (
             <>
-              <Button onClick={handleRetry} className="flex items-center gap-2">
-                Try Again
-              </Button>
-              <Button variant="outline" onClick={handleNewBooking}>
-                New Search
-              </Button>
+              {bookingResult.errorCode === "DUPLICATE_BOOKING" ? (
+                <>
+                  <Button
+                    onClick={handleViewMyBookings}
+                    className="flex items-center gap-2"
+                  >
+                    View My Bookings
+                  </Button>
+                  <Button variant="outline" onClick={handleNewBooking}>
+                    Different Trip
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    onClick={handleRetry}
+                    className="flex items-center gap-2"
+                  >
+                    Try Different Trip
+                  </Button>
+                  <Button variant="outline" onClick={handleNewBooking}>
+                    New Search
+                  </Button>
+                </>
+              )}
             </>
           )}
         </div>
@@ -336,10 +420,25 @@ function SuccessResult({ bookingResult }: { bookingResult: BookingResult }) {
           <CardDescription className="text-green-700">
             Your shuttle bus reservation has been successfully confirmed
           </CardDescription>
-          <div className="mt-4">
-            <div className="text-sm text-gray-600">Main Booking ID</div>
-            <div className="text-xl font-mono font-semibold text-gray-900">
-              {bookingResult.mainBookingId}
+          <div className="mt-4 space-y-2">
+            <div>
+              <div className="text-sm text-gray-600">Booking ID</div>
+              <div className="text-xl font-mono font-semibold text-gray-900">
+                {bookingResult.mainBookingId}
+              </div>
+            </div>
+            <div className="text-sm text-gray-500">
+              Booked on{" "}
+              {bookingResult.timestamp.toLocaleDateString("th-TH", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}{" "}
+              at{" "}
+              {bookingResult.timestamp.toLocaleTimeString("th-TH", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </div>
           </div>
         </CardHeader>
@@ -355,36 +454,67 @@ function SuccessResult({ bookingResult }: { bookingResult: BookingResult }) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-3">
-              <MapPin className="w-5 h-5 text-gray-500" />
-              <div>
-                <div className="font-medium">
-                  {bookingResult.trip.origin} → {bookingResult.trip.destination}
+            {/* Route */}
+            <div className="flex items-start gap-3">
+              <MapPin className="w-5 h-5 text-gray-500 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-sm text-gray-600 mb-1">Your Journey</div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {bookingResult.trip.origin}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Departure at{" "}
+                        {bookingResult.trip.vehicle_route_start_time}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="ml-1 border-l-2 border-gray-300 h-6"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        {bookingResult.trip.destination}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Arrival at {bookingResult.trip.vehicle_route_end_time}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">Route</div>
               </div>
             </div>
 
+            {/* Duration */}
             <div className="flex items-center gap-3">
               <Clock className="w-5 h-5 text-gray-500" />
               <div>
+                <div className="text-sm text-gray-600">Travel Duration</div>
                 <div className="font-medium">
-                  {bookingResult.trip.vehicle_route_start_time} —{" "}
-                  {bookingResult.trip.vehicle_route_end_time}
-                </div>
-                <div className="text-sm text-gray-600">
                   {bookingResult.trip.vehicle_route_duration}
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Badge className="border border-red-500 text-red-600 bg-transparent">
-                {bookingResult.trip.vehicle_type}
-              </Badge>
-              <Badge className="bg-red-500 text-white">
-                {bookingResult.trip.vehicle_license_plate}
-              </Badge>
+            {/* Vehicle Info */}
+            <div className="border-t pt-4">
+              <div className="text-sm text-gray-600 mb-2">
+                Vehicle Information
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge className="border border-red-500 text-red-600 bg-transparent">
+                  {bookingResult.trip.vehicle_type}
+                </Badge>
+                <Badge className="bg-red-500 text-white">
+                  {bookingResult.trip.vehicle_license_plate}
+                </Badge>
+                <Badge className="bg-gray-100 text-gray-700">
+                  Capacity: {bookingResult.trip.vehicle_seat} seats
+                </Badge>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -398,16 +528,47 @@ function SuccessResult({ bookingResult }: { bookingResult: BookingResult }) {
       {/* Important Information */}
       <Card className="border-blue-200 bg-blue-50/30">
         <CardHeader>
-          <CardTitle className="text-blue-800">Important Information</CardTitle>
+          <CardTitle className="text-blue-800 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5" />
+            Important Information
+          </CardTitle>
         </CardHeader>
-        <CardContent className="text-blue-700 space-y-2">
-          <div>
-            • Please arrive at the departure point 10 minutes before departure
-            time
+        <CardContent className="text-blue-700 space-y-3">
+          <div className="flex items-start gap-2">
+            <div className="font-bold">•</div>
+            <div>
+              Please arrive at <strong>{bookingResult.trip?.origin}</strong> at
+              least <strong>10 minutes before departure</strong> (
+              {bookingResult.trip?.vehicle_route_start_time})
+            </div>
           </div>
-          <div>• Bring a valid ID for verification</div>
-          <div>• Keep your booking ID for reference</div>
-          <div>• Contact support if you need to make changes</div>
+          <div className="flex items-start gap-2">
+            <div className="font-bold">•</div>
+            <div>
+              Bring a <strong>valid ID</strong> for verification
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="font-bold">•</div>
+            <div>
+              Keep your{" "}
+              <strong>Booking ID: {bookingResult.mainBookingId}</strong> for
+              reference
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="font-bold">•</div>
+            <div>
+              Contact support if you need to make changes or have questions
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="font-bold">•</div>
+            <div>
+              You can view and manage your booking in the{" "}
+              <strong>&quot;My Bookings&quot;</strong> section
+            </div>
+          </div>
         </CardContent>
       </Card>
     </>
@@ -508,6 +669,13 @@ function ErrorResult({ bookingResult }: { bookingResult: BookingResult }) {
 
 function getRecommendations(errorCode: string): string[] {
   switch (errorCode) {
+    case "DUPLICATE_BOOKING":
+      return [
+        "Check your existing bookings in 'My Bookings' section",
+        "Cancel your existing booking if you want to rebook",
+        "Choose a different departure time",
+        "Contact support if you believe you don't have an active booking",
+      ];
     case "SEAT_UNAVAILABLE":
       return [
         "Choose a different time or date for your trip",

@@ -1,37 +1,42 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useMemo } from "react";
 import { Combobox, ComboboxItem } from "@/components/comboBox";
 import { ChevronLeft } from "lucide-react";
 import { DatePicker } from "@/components/datePicker";
 import { useQueryState, parseAsString, parseAsIsoDateTime } from "nuqs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useBusStops } from "@/hooks/useBusStops";
 
 function BookingPageContent() {
   const router = useRouter();
+  const { busStops } = useBusStops();
+
   const [selectedDate, setSelectedDate] = useQueryState(
     "date",
     parseAsIsoDateTime.withDefault(new Date())
   );
   const [origin, setOrigin] = useQueryState(
-    "origin",
+    "originStopId",
     parseAsString.withDefault("")
   );
   const [destination, setDestination] = useQueryState(
-    "destination",
+    "destinationStopId",
     parseAsString.withDefault("")
   );
   const [guestCount, setGuestCount] = useQueryState(
     "guests",
     parseAsString.withDefault("")
   );
-  const [vehicleTypeSelected, setVehicleTypeSelected] = useQueryState(
-    "vehicle",
-    parseAsString.withDefault("")
-  );
 
-  const [showAdvancedOptions, setShowAdvancedOptions] = React.useState(true);
+  // Convert bus stops to combobox items
+  const bussStop: ComboboxItem[] = useMemo(() => {
+    return busStops.map((stop) => ({
+      value: stop.busStopId.toString(),
+      label: stop.stopName,
+    }));
+  }, [busStops]);
 
   const handleDateChange = (date: Date | undefined) => {
     setSelectedDate(date || null);
@@ -48,17 +53,15 @@ function BookingPageContent() {
       origin,
       destination,
       guests: guestCount,
-      vehicle: vehicleTypeSelected || "all",
     });
 
     const searchParams = new URLSearchParams();
     if (selectedDate) {
       searchParams.set("date", selectedDate.toISOString());
     }
-    if (origin) searchParams.set("origin", origin);
-    if (destination) searchParams.set("destination", destination);
+    if (origin) searchParams.set("originStopId", origin);
+    if (destination) searchParams.set("destinationStopId", destination);
     if (guestCount) searchParams.set("guests", guestCount);
-    if (vehicleTypeSelected) searchParams.set("vehicle", vehicleTypeSelected);
 
     router.push(`/booking/search?${searchParams.toString()}`);
   };
@@ -68,33 +71,19 @@ function BookingPageContent() {
     setOrigin("");
     setDestination("");
     setGuestCount("");
-    setVehicleTypeSelected("");
   };
 
   const isFormValid = selectedDate && origin && destination && guestCount;
-
-  const bussStop: ComboboxItem[] = [
-    { value: "1", label: "มหาวิทยาลัยเทคโนโลยีมหานคร" },
-    { value: "2", label: "โลตัสหนองจอก" },
-    { value: "3", label: "โรงพยาบาลหนองจอก" },
-    { value: "4", label: "Big C หนองจอก" },
-    { value: "5", label: "สวนสาธารณหนองจอก" },
-    { value: "6", label: "ร้านส้มตำป้านาง" },
-  ];
 
   const guestAmount: ComboboxItem[] = [
     { value: "1", label: "1 guest" },
     { value: "2", label: "2 guests" },
     { value: "3", label: "3 guests" },
     { value: "4", label: "4 guests" },
-  ];
-
-  const vehicleType: ComboboxItem[] = [
-    { value: "1", label: "All vehicle types" },
-    { value: "2", label: "Minibus" },
-    { value: "3", label: "Bus" },
-    { value: "4", label: "Van" },
-    { value: "5", label: "Minivan" },
+    { value: "5", label: "5 guests" },
+    { value: "6", label: "6 guests" },
+    { value: "7", label: "7 guests" },
+    { value: "8", label: "8 guests" },
   ];
 
   return (
@@ -156,29 +145,6 @@ function BookingPageContent() {
             allowDeselect={false}
           />
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">
-              Vehicle type
-            </label>
-            <button
-              type="button"
-              onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-              className="text-xs text-blue-600 hover:text-blue-800"
-            >
-              {showAdvancedOptions ? "Hide" : "Show"} advanced options
-            </button>
-          </div>
-          <Combobox
-            placeholder="Select vehicle type (optional)"
-            items={vehicleType}
-            value={vehicleTypeSelected}
-            onChange={setVehicleTypeSelected}
-            defaultValue="1"
-            allowDeselect={true}
-            disabled={!showAdvancedOptions}
-          />
-        </div>
 
         <div className="flex gap-2 mt-8">
           <button
@@ -207,7 +173,7 @@ function BookingPageContent() {
               <div className="flex justify-between">
                 <span>Date:</span>
                 <span className="font-medium">
-                  {selectedDate?.toLocaleDateString("en-US", {
+                  {selectedDate?.toLocaleDateString("th-TH", {
                     weekday: "short",
                     year: "numeric",
                     month: "short",
@@ -236,18 +202,6 @@ function BookingPageContent() {
                   }
                 </span>
               </div>
-              {vehicleTypeSelected && (
-                <div className="flex justify-between">
-                  <span>Vehicle type:</span>
-                  <span className="font-medium">
-                    {
-                      vehicleType.find(
-                        (vehicle) => vehicle.value === vehicleTypeSelected
-                      )?.label
-                    }
-                  </span>
-                </div>
-              )}
             </div>
           </div>
         )}

@@ -1,9 +1,10 @@
 "use client";
-import React, { useMemo, Suspense } from "react";
-import { Car, ChevronLeft } from "lucide-react";
+
+import { Suspense, useMemo } from "react";
+import { useQueryState, parseAsIsoDateTime, parseAsString } from "nuqs";
 import { useRouter } from "next/navigation";
-import { useQueryState } from "nuqs";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft, Car, Calendar, Users, AlertCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -12,211 +13,165 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TripCardList, type Trip } from "@/components/tripCard";
-
-export interface BookingInfoFromAPI {
-  date: Date;
-  origin: string;
-  destination: string;
-  guests: number;
-  vehicle: string;
-}
+import { useRouteSearch } from "@/hooks/useRouteSearch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function SearchPageContent() {
+  const router = useRouter();
   const [sortBy, setSortBy] = useQueryState("sort", {
     defaultValue: "time-asc",
     shallow: false,
   });
 
-  const MockBookingInfoFromAPI: BookingInfoFromAPI = {
-    date: new Date("2025-09-28T09:28:04.297Z"),
-    origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-    destination: "Big C หนองจอก",
-    guests: 4,
-    vehicle: "All vehicle types",
-  };
-
-  const MockMatchTrip = useMemo(
-    () => [
-      {
-        vehicleRouteScheduleId: "1",
-        vehicle_license_plate: "ป้ายทะเบียน 1",
-        vehicle_type: "Minibus",
-        vehicle_seat: 25,
-        vehicle_route_start_time: "09:30",
-        vehicle_route_end_time: "10:15",
-        vehicle_route_duration: "45 min",
-        available_seat: 25,
-        origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-        destination: "Big C หนองจอก",
-      },
-      {
-        vehicleRouteScheduleId: "2",
-        vehicle_license_plate: "ป้ายทะเบียน 2",
-        vehicle_type: "Bus",
-        vehicle_seat: 40,
-        vehicle_route_start_time: "10:00",
-        vehicle_route_end_time: "10:45",
-        vehicle_route_duration: "45 min",
-        available_seat: 2,
-        origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-        destination: "Big C หนองจอก",
-      },
-      {
-        vehicleRouteScheduleId: "3",
-        vehicle_license_plate: "ป้ายทะเบียน 3",
-        vehicle_type: "Van",
-        vehicle_seat: 12,
-        vehicle_route_start_time: "10:30",
-        vehicle_route_end_time: "11:15",
-        vehicle_route_duration: "45 min",
-        available_seat: 5,
-        origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-        destination: "Big C หนองจอก",
-      },
-      {
-        vehicleRouteScheduleId: "4",
-        vehicle_license_plate: "ป้ายทะเบียน 4",
-        vehicle_type: "Minibus",
-        vehicle_seat: 25,
-        vehicle_route_start_time: "11:00",
-        vehicle_route_end_time: "11:45",
-        vehicle_route_duration: "45 min",
-        available_seat: 20,
-        origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-        destination: "Big C หนองจอก",
-      },
-      {
-        vehicleRouteScheduleId: "5",
-        vehicle_license_plate: "ป้ายทะเบียน 5",
-        vehicle_type: "Bus",
-        vehicle_seat: 40,
-        vehicle_route_start_time: "11:30",
-        vehicle_route_end_time: "12:15",
-        vehicle_route_duration: "45 min",
-        available_seat: 0,
-        origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-        destination: "Big C หนองจอก",
-      },
-      {
-        vehicleRouteScheduleId: "6",
-        vehicle_license_plate: "ป้ายทะเบียน 6",
-        vehicle_type: "Van",
-        vehicle_seat: 12,
-        vehicle_route_start_time: "12:00",
-        vehicle_route_end_time: "12:45",
-        vehicle_route_duration: "45 min",
-        available_seat: 8,
-        origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-        destination: "Big C หนองจอก",
-      },
-      {
-        vehicleRouteScheduleId: "7",
-        vehicle_license_plate: "ป้ายทะเบียน 7",
-        vehicle_type: "Minivan",
-        vehicle_seat: 15,
-        vehicle_route_start_time: "12:30",
-        vehicle_route_end_time: "13:15",
-        vehicle_route_duration: "45 min",
-        available_seat: 10,
-        origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-        destination: "Big C หนองจอก",
-      },
-      {
-        vehicleRouteScheduleId: "8",
-        vehicle_license_plate: "ป้ายทะเบียน 8",
-        vehicle_type: "Minibus",
-        vehicle_seat: 25,
-        vehicle_route_start_time: "13:00",
-        vehicle_route_end_time: "13:45",
-        vehicle_route_duration: "45 min",
-        available_seat: 18,
-        origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-        destination: "Big C หนองจอก",
-      },
-      {
-        vehicleRouteScheduleId: "9",
-        vehicle_license_plate: "ป้ายทะเบียน 9",
-        vehicle_type: "Bus",
-        vehicle_seat: 40,
-        vehicle_route_start_time: "13:30",
-        vehicle_route_end_time: "14:15",
-        vehicle_route_duration: "45 min",
-        available_seat: 22,
-        origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-        destination: "Big C หนองจอก",
-      },
-      {
-        vehicleRouteScheduleId: "10",
-        vehicle_license_plate: "ป้ายทะเบียน 10",
-        vehicle_type: "Van",
-        vehicle_seat: 12,
-        vehicle_route_start_time: "14:00",
-        vehicle_route_end_time: "14:45",
-        vehicle_route_duration: "45 min",
-        available_seat: 6,
-        origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-        destination: "Big C หนองจอก",
-      },
-    ],
-    []
+  // Get search parameters from URL
+  const [dateStr] = useQueryState("date", parseAsIsoDateTime);
+  const [originStopIdStr] = useQueryState("originStopId", parseAsString);
+  const [destinationStopIdStr] = useQueryState(
+    "destinationStopId",
+    parseAsString
   );
+  const [guestsStr] = useQueryState("guests", parseAsString);
 
-  const router = useRouter();
+  // Parse parameters
+  const searchParams = useMemo(() => {
+    if (!dateStr || !originStopIdStr || !destinationStopIdStr || !guestsStr) {
+      return null;
+    }
 
+    return {
+      date: dateStr,
+      originStopId: parseInt(originStopIdStr),
+      destinationStopId: parseInt(destinationStopIdStr),
+      guests: parseInt(guestsStr),
+    };
+  }, [dateStr, originStopIdStr, destinationStopIdStr, guestsStr]);
+
+  // Fetch routes using the hook
+  const { routes, isLoading, error, searchCriteria } =
+    useRouteSearch(searchParams);
+
+  // Convert API routes to Trip format for TripCardList
+  const trips: Trip[] = useMemo(() => {
+    return routes.map((route) => ({
+      vehicleRouteScheduleId: route.vehicleRouteScheduleId.toString(),
+      vehicle_license_plate: route.vehicle.licensePlate,
+      vehicle_type: route.vehicle.vehicleType.vehicleTypeName,
+      vehicle_seat: route.vehicle.capacity,
+      vehicle_route_start_time: new Date(route.startTime).toLocaleTimeString(
+        "th-TH",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }
+      ),
+      vehicle_route_end_time: new Date(route.endTime).toLocaleTimeString(
+        "th-TH",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }
+      ),
+      vehicle_route_duration: `${route.travelTime} min`,
+      available_seat: route.availableSeats,
+      origin: route.origin.stopName,
+      destination: route.destination.stopName,
+    }));
+  }, [routes]);
+
+  // Sort trips
   const sortedTrips = useMemo(() => {
-    const trips = [...MockMatchTrip];
+    const tripsCopy = [...trips];
 
     switch (sortBy) {
       case "time-asc":
-        return trips.sort((a, b) =>
+        return tripsCopy.sort((a, b) =>
           a.vehicle_route_start_time.localeCompare(b.vehicle_route_start_time)
         );
       case "time-desc":
-        return trips.sort((a, b) =>
+        return tripsCopy.sort((a, b) =>
           b.vehicle_route_start_time.localeCompare(a.vehicle_route_start_time)
         );
       case "duration-asc":
-        return trips.sort((a, b) => {
+        return tripsCopy.sort((a, b) => {
           const aDuration = parseInt(a.vehicle_route_duration);
           const bDuration = parseInt(b.vehicle_route_duration);
           return aDuration - bDuration;
         });
       case "duration-desc":
-        return trips.sort((a, b) => {
+        return tripsCopy.sort((a, b) => {
           const aDuration = parseInt(a.vehicle_route_duration);
           const bDuration = parseInt(b.vehicle_route_duration);
           return bDuration - aDuration;
         });
       case "seats-asc":
-        return trips.sort((a, b) => a.available_seat - b.available_seat);
+        return tripsCopy.sort((a, b) => a.available_seat - b.available_seat);
       case "seats-desc":
-        return trips.sort((a, b) => b.available_seat - a.available_seat);
+        return tripsCopy.sort((a, b) => b.available_seat - a.available_seat);
       case "vehicle-asc":
-        return trips.sort((a, b) =>
+        return tripsCopy.sort((a, b) =>
           a.vehicle_type.localeCompare(b.vehicle_type)
         );
       case "vehicle-desc":
-        return trips.sort((a, b) =>
+        return tripsCopy.sort((a, b) =>
           b.vehicle_type.localeCompare(a.vehicle_type)
         );
       default:
-        return trips;
+        return tripsCopy;
     }
-  }, [MockMatchTrip, sortBy]);
+  }, [trips, sortBy]);
 
   const handleBookTrip = (trip: Trip) => {
-    router.push(
-      `/booking/guest-details?tripId=${trip.vehicleRouteScheduleId}&guests=${MockBookingInfoFromAPI.guests}`
-    );
+    // Pass all necessary data to guest-details page
+    const params = new URLSearchParams({
+      vehicleRouteScheduleId: trip.vehicleRouteScheduleId,
+      guests: (searchParams?.guests || 1).toString(),
+      originStopId: searchParams?.originStopId?.toString() || "",
+      destinationStopId: searchParams?.destinationStopId?.toString() || "",
+      // Display data for UI
+      origin: trip.origin,
+      destination: trip.destination,
+      startTime: trip.vehicle_route_start_time,
+      endTime: trip.vehicle_route_end_time,
+      duration: trip.vehicle_route_duration,
+      vehicleType: trip.vehicle_type,
+      licensePlate: trip.vehicle_license_plate,
+      availableSeats: trip.available_seat.toString(),
+      capacity: trip.vehicle_seat.toString(),
+    });
+
+    router.push(`/booking/guest-details?${params.toString()}`);
   };
 
   const handleSortChange = (value: string) => {
     setSortBy(value);
   };
 
+  // Show error if no search params
+  if (!searchParams) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center p-4">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Missing search parameters. Please go back and fill in the search
+            form.
+          </AlertDescription>
+        </Alert>
+        <Button onClick={() => router.push("/booking")} className="mt-4">
+          Go to Search
+        </Button>
+      </main>
+    );
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-start gap-4">
+      {/* Header */}
       <div className="sticky top-0 left-0 w-screen flex flex-row items-center justify-start bg-white z-[100] border-b border-gray-200 shadow-sm">
+        {/* Mobile Header */}
         <div className="flex md:hidden w-full p-2 gap-2 items-center">
           <Button
             variant="ghost"
@@ -230,42 +185,34 @@ function SearchPageContent() {
 
           <div className="flex flex-col gap-1 flex-1 min-w-0">
             <div className="flex items-center gap-1 min-w-0">
-              <div className="flex-1 min-w-0">
-                <p className="truncate text-xs font-medium text-gray-900">
-                  {MockBookingInfoFromAPI.origin.length > 20
-                    ? MockBookingInfoFromAPI.origin.substring(0, 20) + "..."
-                    : MockBookingInfoFromAPI.origin}
-                </p>
-              </div>
-              <div className="flex-shrink-0 px-1">
-                <Car className="w-3 h-3 text-red-700" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="truncate text-xs font-medium text-gray-900">
-                  {MockBookingInfoFromAPI.destination.length > 15
-                    ? MockBookingInfoFromAPI.destination.substring(0, 15) +
-                      "..."
-                    : MockBookingInfoFromAPI.destination}
-                </p>
-              </div>
+              <Car className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <p className="text-xs text-gray-500 truncate">
+                {searchCriteria?.originStop.stopName} →{" "}
+                {searchCriteria?.destinationStop.stopName}
+              </p>
             </div>
 
             <div className="flex items-center gap-2 text-xs text-gray-500">
-              <span>
-                อา. {MockBookingInfoFromAPI.date.getDate()}{" "}
-                {MockBookingInfoFromAPI.date.toLocaleDateString("th", {
-                  month: "short",
-                })}
-              </span>
-              <span>•</span>
-              <span>
-                {MockBookingInfoFromAPI.guests} passenger
-                {MockBookingInfoFromAPI.guests > 1 ? "s" : ""}
-              </span>
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                <span>
+                  {searchCriteria?.date
+                    ? new Date(searchCriteria.date).toLocaleDateString()
+                    : ""}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                <span>
+                  {searchCriteria?.guests}{" "}
+                  {searchCriteria?.guests === 1 ? "guest" : "guests"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Desktop Header */}
         <div className="hidden md:flex w-full p-4 gap-4 items-center max-w-6xl mx-auto">
           <Button
             variant="ghost"
@@ -279,15 +226,10 @@ function SearchPageContent() {
 
           <div className="flex items-center gap-6 flex-1 min-w-0">
             <div className="flex flex-col gap-1 flex-1 min-w-0">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">
-                From
+              <p className="text-sm font-semibold text-foreground truncate">
+                {searchCriteria?.originStop.stopName}
               </p>
-              <p
-                className="truncate text-lg font-bold text-gray-900"
-                title={MockBookingInfoFromAPI.origin}
-              >
-                {MockBookingInfoFromAPI.origin}
-              </p>
+              <p className="text-xs text-muted-foreground">Origin</p>
             </div>
 
             <div className="flex-shrink-0 px-2">
@@ -295,91 +237,120 @@ function SearchPageContent() {
             </div>
 
             <div className="flex flex-col gap-1 flex-1 min-w-0">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">
-                To
+              <p className="text-sm font-semibold text-foreground truncate">
+                {searchCriteria?.destinationStop.stopName}
               </p>
-              <p
-                className="truncate text-lg font-bold text-gray-900"
-                title={MockBookingInfoFromAPI.destination}
-              >
-                {MockBookingInfoFromAPI.destination}
-              </p>
+              <p className="text-xs text-muted-foreground">Destination</p>
             </div>
 
             <div className="flex flex-col gap-1 flex-shrink-0 text-right">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">
-                Date
+              <p className="text-sm font-semibold text-foreground">
+                {searchCriteria?.date
+                  ? new Date(searchCriteria.date).toLocaleDateString("th-TH", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : ""}
               </p>
-              <p className="text-sm font-medium text-gray-900">
-                {MockBookingInfoFromAPI.date.toLocaleDateString("th", {
-                  weekday: "short",
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </p>
+              <p className="text-xs text-muted-foreground">Date</p>
             </div>
 
             <div className="flex flex-col gap-1 flex-shrink-0 text-right">
-              <p className="text-xs text-gray-500 uppercase tracking-wide">
-                Passengers
+              <p className="text-sm font-semibold text-foreground">
+                {searchCriteria?.guests}{" "}
+                {searchCriteria?.guests === 1 ? "Guest" : "Guests"}
               </p>
-              <p className="text-sm font-medium text-gray-900">
-                {MockBookingInfoFromAPI.guests} passenger
-                {MockBookingInfoFromAPI.guests > 1 ? "s" : ""}
-              </p>
+              <p className="text-xs text-muted-foreground">Passengers</p>
             </div>
-
-            {MockBookingInfoFromAPI.vehicle !== "All vehicle types" && (
-              <div className="flex flex-col gap-1 flex-shrink-0 text-right">
-                <p className="text-xs text-gray-500 uppercase tracking-wide">
-                  Vehicle
-                </p>
-                <p className="text-sm font-medium text-gray-900">
-                  {MockBookingInfoFromAPI.vehicle}
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
+      {/* Content */}
       <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 flex flex-col gap-4 sm:gap-6 pb-6">
+        {/* Results Header with Sort */}
         <div className="flex items-center justify-between pt-3 sm:pt-4">
           <div>
             <h2 className="text-base sm:text-lg font-semibold text-foreground">
               Available Routes
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              {sortedTrips.length} route
-              {sortedTrips.length !== 1 ? "s" : ""} found
+              {isLoading
+                ? "Searching..."
+                : `${sortedTrips.length} ${
+                    sortedTrips.length === 1 ? "route" : "routes"
+                  } found`}
             </p>
           </div>
 
           <div>
             <Select value={sortBy} onValueChange={handleSortChange}>
-              <SelectTrigger className="w-32 sm:w-40 text-xs sm:text-sm">
-                <SelectValue placeholder="Sort" />
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="time-asc">Time A-Z</SelectItem>
-                <SelectItem value="time-desc">Time Z-A</SelectItem>
-                <SelectItem value="duration-asc">Duration A-Z</SelectItem>
-                <SelectItem value="duration-desc">Duration Z-A</SelectItem>
-                <SelectItem value="seats-asc">Seats A-Z</SelectItem>
-                <SelectItem value="seats-desc">Seats Z-A</SelectItem>
-                <SelectItem value="vehicle-asc">Vehicle A-Z</SelectItem>
-                <SelectItem value="vehicle-desc">Vehicle Z-A</SelectItem>
+                <SelectItem value="time-asc">Time (earliest first)</SelectItem>
+                <SelectItem value="time-desc">Time (latest first)</SelectItem>
+                <SelectItem value="duration-asc">
+                  Duration (shortest)
+                </SelectItem>
+                <SelectItem value="duration-desc">
+                  Duration (longest)
+                </SelectItem>
+                <SelectItem value="seats-asc">
+                  Seats (least available)
+                </SelectItem>
+                <SelectItem value="seats-desc">
+                  Seats (most available)
+                </SelectItem>
+                <SelectItem value="vehicle-asc">Vehicle (A-Z)</SelectItem>
+                <SelectItem value="vehicle-desc">Vehicle (Z-A)</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        <TripCardList
-          wantedSeat={MockBookingInfoFromAPI.guests}
-          trips={sortedTrips}
-          onBook={handleBookTrip}
-        />
+        {/* Error State */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="border rounded-lg p-4 space-y-3">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !error && sortedTrips.length === 0 && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              No routes found for your search criteria. Please try different
+              dates or locations.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Results */}
+        {!isLoading && !error && sortedTrips.length > 0 && (
+          <TripCardList
+            wantedSeat={searchParams.guests}
+            trips={sortedTrips}
+            onBook={handleBookTrip}
+          />
+        )}
       </div>
     </main>
   );
@@ -390,33 +361,28 @@ function SearchPageLoading() {
     <main className="flex min-h-screen flex-col items-center justify-start gap-4">
       <div className="sticky top-0 left-0 w-screen flex flex-row items-center justify-start bg-white z-[100] border-b border-gray-200 shadow-sm">
         <div className="flex md:hidden w-full p-2 gap-2 items-center">
-          <div className="w-8 h-8 bg-gray-200 rounded animate-pulse"></div>
+          <Skeleton className="w-8 h-8 rounded" />
           <div className="flex flex-col gap-1 flex-1">
-            <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-            <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
-          </div>
-        </div>
-        <div className="hidden md:flex w-full p-4 gap-4 items-center max-w-6xl mx-auto">
-          <div className="w-10 h-10 bg-gray-200 rounded animate-pulse"></div>
-          <div className="flex items-center gap-6 flex-1">
-            <div className="h-8 bg-gray-200 rounded animate-pulse flex-1"></div>
-            <div className="h-8 bg-gray-200 rounded animate-pulse flex-1"></div>
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
           </div>
         </div>
       </div>
       <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 flex flex-col gap-4 sm:gap-6 pb-6">
         <div className="flex items-center justify-between pt-3 sm:pt-4">
           <div>
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-32 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+            <Skeleton className="h-6 w-32 mb-2" />
+            <Skeleton className="h-4 w-24" />
           </div>
+          <Skeleton className="h-10 w-[180px]" />
         </div>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-24 bg-gray-200 rounded animate-pulse"
-            ></div>
+            <div key={i} className="border rounded-lg p-4 space-y-3">
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-full" />
+            </div>
           ))}
         </div>
       </div>

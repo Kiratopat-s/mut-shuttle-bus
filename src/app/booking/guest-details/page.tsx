@@ -1,7 +1,7 @@
 "use client";
 import Loading from "@/components/loading/Loading";
 import { Suspense, useState, useCallback } from "react";
-import { useQueryState } from "nuqs";
+import { useSearchParams } from "next/navigation";
 import {
   ChevronLeft,
   Car,
@@ -11,9 +11,9 @@ import {
   Minus,
   UserCheck,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Trip } from "@/components/tripCard";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -32,11 +32,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { z } from "zod";
+import {
+  bookingApi,
+  type BookingCreateRequest,
+} from "@/lib/booking-api-client";
 
 // Zod schema for guest form validation
 const GuestFormSchema = z.object({
-  email: z.email(),
+  email: z.string().email("Invalid email address"),
   firstName: z
     .string()
     .min(1, "First name is required")
@@ -62,21 +67,66 @@ type GuestForm = z.infer<typeof GuestFormSchema>;
 type GuestFormErrors = Partial<Record<keyof GuestForm, string>>;
 type AllGuestErrors = GuestFormErrors[];
 
-// will be push from another page router.push(
-//   `/booking/guest-details?tripId=${trip.vehicleRouteScheduleId}&guests=${MockChoosenTrip.guests}`
-// );
+// Trip data from URL parameters
+interface TripData {
+  vehicleRouteScheduleId: string;
+  originStopId: string;
+  destinationStopId: string;
+  guests: number;
+  origin: string;
+  destination: string;
+  startTime: string;
+  endTime: string;
+  duration: string;
+  vehicleType: string;
+  licensePlate: string;
+  availableSeats: number;
+  capacity: number;
+}
 
 function GuestDetailsPageContent() {
   const router = useRouter();
-  const [tripId] = useQueryState("tripId");
-  const [guests, setGuests] = useQueryState("guests");
+  const searchParams = useSearchParams();
 
-  const rawTripId = Array.isArray(tripId) ? tripId[0] : tripId;
-  const rawGuests = Array.isArray(guests) ? guests[0] : guests;
-  const initialGuestsNum = guests ? parseInt(rawGuests as string, 10) : 1;
+  // Parse trip data from URL
+  const tripData: TripData | null = (() => {
+    try {
+      const vehicleRouteScheduleId = searchParams.get("vehicleRouteScheduleId");
+      const guests = searchParams.get("guests");
+      const originStopId = searchParams.get("originStopId");
+      const destinationStopId = searchParams.get("destinationStopId");
+
+      if (
+        !vehicleRouteScheduleId ||
+        !guests ||
+        !originStopId ||
+        !destinationStopId
+      ) {
+        return null;
+      }
+
+      return {
+        vehicleRouteScheduleId,
+        originStopId,
+        destinationStopId,
+        guests: parseInt(guests, 10),
+        origin: searchParams.get("origin") || "",
+        destination: searchParams.get("destination") || "",
+        startTime: searchParams.get("startTime") || "",
+        endTime: searchParams.get("endTime") || "",
+        duration: searchParams.get("duration") || "",
+        vehicleType: searchParams.get("vehicleType") || "",
+        licensePlate: searchParams.get("licensePlate") || "",
+        availableSeats: parseInt(searchParams.get("availableSeats") || "0", 10),
+        capacity: parseInt(searchParams.get("capacity") || "0", 10),
+      };
+    } catch {
+      return null;
+    }
+  })();
 
   const [guestForms, setGuestForms] = useState<GuestForm[]>(() =>
-    Array.from({ length: initialGuestsNum }, () => ({
+    Array.from({ length: tripData?.guests || 1 }, () => ({
       email: "",
       firstName: "",
       lastName: "",
@@ -86,15 +136,15 @@ function GuestDetailsPageContent() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<AllGuestErrors>([]);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Real-time validation function for a single field
   const validateField = useCallback(
     (guestData: GuestForm, field: keyof GuestForm): string | null => {
       try {
-        // Validate only the specific field
         const fieldSchema = GuestFormSchema.shape[field];
         fieldSchema.parse(guestData[field]);
-        return null; // No error
+        return null;
       } catch (error) {
         if (error instanceof z.ZodError) {
           return error.issues[0]?.message || "Invalid input";
@@ -112,11 +162,10 @@ function GuestDetailsPageContent() {
           i === index ? { ...guest, [field]: value } : guest
         );
 
-        // Perform real-time validation on the updated guest
+        // Perform real-time validation
         const updatedGuest = newForms[index];
         const fieldError = validateField(updatedGuest, field);
 
-        // Update validation errors
         setValidationErrors((prevErrors) => {
           const newErrors = [...prevErrors];
           if (!newErrors[index]) {
@@ -191,7 +240,6 @@ function GuestDetailsPageContent() {
     [guestForms]
   );
 
-  // Real-time check if all forms are valid
   const isAllFormsValid = useCallback(() => {
     return guestForms.every((guest, index) => {
       const result = GuestFormSchema.safeParse(guest);
@@ -203,19 +251,8 @@ function GuestDetailsPageContent() {
     });
   }, [guestForms, validationErrors]);
 
-  const MockChoosenTrip: Trip = {
-    vehicleRouteScheduleId: "1",
-    vehicle_license_plate: "ป้ายทะเบียน 1",
-    vehicle_type: "Minibus",
-    vehicle_seat: 25,
-    vehicle_route_start_time: "09:30",
-    vehicle_route_end_time: "10:15",
-    vehicle_route_duration: "45 min",
-    available_seat: 25,
-    origin: "มหาวิทยาลัยเทคโนโลยีมหานคร",
-    destination: "Big C หนองจอก",
-  };
   const fillMyInfo = useCallback(() => {
+    // TODO: Fetch current user data from API
     const currentUserData = {
       email: "john.doe@example.com",
       firstName: "John",
@@ -231,8 +268,7 @@ function GuestDetailsPageContent() {
     async (email: string, guestIndex: number) => {
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
 
-      // Mock API call to get user data by email
-      // In real app, replace with actual API call
+      // Mock user lookup - replace with actual API call
       const mockUserDatabase = [
         {
           email: "jane.smith@example.com",
@@ -245,12 +281,6 @@ function GuestDetailsPageContent() {
           firstName: "Alice",
           lastName: "Wong",
           phoneNumber: "0834567890",
-        },
-        {
-          email: "bob.wilson@example.com",
-          firstName: "Bob",
-          lastName: "Wilson",
-          phoneNumber: "0845678901",
         },
       ];
 
@@ -267,7 +297,7 @@ function GuestDetailsPageContent() {
   );
 
   const currentGuestsNum = guestForms.length;
-  const maxGuests = Math.min(4, MockChoosenTrip.available_seat);
+  const maxGuests = Math.min(4, tripData?.availableSeats || 1);
 
   const addGuest = useCallback(() => {
     if (currentGuestsNum < maxGuests) {
@@ -276,31 +306,24 @@ function GuestDetailsPageContent() {
         { email: "", firstName: "", lastName: "", phoneNumber: "" },
       ]);
       setValidationErrors((prev) => [...prev, {}]);
-      setGuests((currentGuestsNum + 1).toString());
     }
-  }, [currentGuestsNum, maxGuests, setGuests]);
+  }, [currentGuestsNum, maxGuests]);
 
   const removeGuest = useCallback(() => {
     if (currentGuestsNum > 1) {
       setGuestForms((prev) => prev.slice(0, -1));
       setValidationErrors((prev) => prev.slice(0, -1));
-      setGuests((currentGuestsNum - 1).toString());
     }
-  }, [currentGuestsNum, setGuests]);
+  }, [currentGuestsNum]);
 
-  if (!tripId || !guests) {
+  // Redirect if no trip data
+  if (!tripData) {
     router.push("/booking/search");
     return null;
   }
 
   const handleSubmit = async () => {
     if (!validateAllGuestForms()) {
-      const errorSummary: string[] = [];
-      validationErrors.forEach((guestErrors, index) => {
-        Object.entries(guestErrors).forEach(([field, message]) => {
-          errorSummary.push(`Guest ${index + 1} - ${field}: ${message}`);
-        });
-      });
       return;
     }
 
@@ -308,44 +331,89 @@ function GuestDetailsPageContent() {
   };
 
   const handleConfirmSubmit = async () => {
-    setIsSubmitting(true);
+    if (!tripData) return;
 
-    // Prepare booking data for API
-    const bookingData = {
-      tripId: rawTripId,
-      guests: guestForms,
-      vehicleRouteScheduleId: MockChoosenTrip.vehicleRouteScheduleId,
-    };
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
-      // Here you would make the API call to submit the booking
-      console.log("Submitting booking data:", bookingData);
+      // Create booking via API
+      const bookingRequest: BookingCreateRequest = {
+        originStopId: parseInt(tripData.originStopId, 10),
+        destinationStopId: parseInt(tripData.destinationStopId, 10),
+        vehicleRouteScheduleId: parseInt(tripData.vehicleRouteScheduleId, 10),
+      };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const booking = await bookingApi.createBooking(bookingRequest);
 
-      // Navigate to confirmation page or show success message
+      // Navigate to success page with booking details
       router.push(
-        `/booking/result-confirmation?bookingId=BMT-2024-${Date.now()}&status=success`
+        `/booking/result-confirmation?status=success&bookingId=${booking.bookingId}`
       );
     } catch (error) {
-      console.error("Error submitting booking:", error);
-      // Navigate to error result page
+      console.error("Error creating booking:", error);
+
+      // Determine error code based on error message
+      let errorCode = "BOOKING_FAILED";
+      let errorMessage = "Failed to create booking";
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // Map specific error messages to error codes
+        if (
+          errorMessage.includes("already have an active booking") ||
+          errorMessage.includes("duplicate")
+        ) {
+          errorCode = "DUPLICATE_BOOKING";
+        } else if (
+          errorMessage.includes("fully booked") ||
+          errorMessage.includes("no longer available") ||
+          errorMessage.includes("capacity")
+        ) {
+          errorCode = "SEAT_UNAVAILABLE";
+        } else if (
+          errorMessage.includes("not found") ||
+          errorMessage.includes("invalid")
+        ) {
+          errorCode = "VALIDATION_ERROR";
+        } else if (
+          errorMessage.includes("network") ||
+          errorMessage.includes("connection")
+        ) {
+          errorCode = "NETWORK_ERROR";
+        } else if (
+          errorMessage.includes("server") ||
+          errorMessage.includes("500")
+        ) {
+          errorCode = "SERVER_ERROR";
+        }
+      }
+
+      // Redirect to error result page with error details
       router.push(
-        `/booking/result-confirmation?status=error&errorCode=BOOKING_FAILED`
+        `/booking/result-confirmation?status=error&errorCode=${errorCode}&errorMessage=${encodeURIComponent(
+          errorMessage
+        )}`
       );
     } finally {
       setIsSubmitting(false);
-      setShowConfirmDialog(false);
     }
   };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-start">
       <GuestDetailsHeader />
-      <TripInfoHeadBar trip={MockChoosenTrip} />
+      <TripInfoHeadBar tripData={tripData} />
 
       <div className="w-full max-w-6xl mx-auto p-4 bg-white rounded-b-2xl shadow">
+        {submitError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
+        )}
+
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">
             Guest Information ({currentGuestsNum}{" "}
@@ -426,15 +494,14 @@ function GuestDetailsPageContent() {
               <h4 className="font-medium mb-2">Trip Details</h4>
               <div className="text-sm text-gray-600 space-y-1">
                 <div>
-                  {MockChoosenTrip.origin} → {MockChoosenTrip.destination}
+                  {tripData.origin} → {tripData.destination}
                 </div>
                 <div>
-                  {MockChoosenTrip.vehicle_route_start_time} —{" "}
-                  {MockChoosenTrip.vehicle_route_end_time}
+                  {tripData.startTime} — {tripData.endTime} •{" "}
+                  {tripData.duration}
                 </div>
                 <div>
-                  {MockChoosenTrip.vehicle_type} •{" "}
-                  {MockChoosenTrip.vehicle_license_plate}
+                  {tripData.vehicleType} • {tripData.licensePlate}
                 </div>
               </div>
             </div>
@@ -458,6 +525,16 @@ function GuestDetailsPageContent() {
                 ))}
               </div>
             </div>
+
+            {/* Important Note */}
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Note:</strong> This booking is for{" "}
+                <strong>1 seat</strong> only. Guest information is collected for
+                record purposes.
+              </AlertDescription>
+            </Alert>
           </div>
 
           <DialogFooter>
@@ -475,7 +552,7 @@ function GuestDetailsPageContent() {
             >
               {isSubmitting ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Processing...
                 </>
               ) : (
@@ -598,7 +675,7 @@ function GuestFormAccordion({
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
         <div className="space-y-4">
-          {/* Email field at the top */}
+          {/* Email field */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor={`email-${guestNumber}`}>Email Address</Label>
@@ -643,7 +720,7 @@ function GuestFormAccordion({
             ) : null}
           </div>
 
-          {/* Other fields in a grid */}
+          {/* Other fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor={`firstName-${guestNumber}`}>First Name</Label>
@@ -700,7 +777,6 @@ function GuestFormAccordion({
                 placeholder="0812345678"
                 value={guestForm.phoneNumber}
                 onChange={(e) => {
-                  // Only allow numbers and limit to 10 digits
                   const value = e.target.value.replace(/\D/g, "").slice(0, 10);
                   onUpdate("phoneNumber", value);
                 }}
@@ -727,7 +803,7 @@ function GuestFormAccordion({
   );
 }
 
-function TripInfoHeadBar({ trip }: { trip: Trip }) {
+function TripInfoHeadBar({ tripData }: { tripData: TripData }) {
   return (
     <div className="w-full p-4 gap-4 items-center max-w-6xl mx-auto border-b border-gray-200">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -737,23 +813,22 @@ function TripInfoHeadBar({ trip }: { trip: Trip }) {
           </div>
           <div className="flex flex-col">
             <div className="text-sm text-gray-600">
-              {trip.origin} → {trip.destination}
+              {tripData.origin} → {tripData.destination}
             </div>
 
             <div className="text-lg font-semibold text-gray-900">
-              {trip.vehicle_route_start_time} — {trip.vehicle_route_end_time} •{" "}
-              {trip.vehicle_route_duration}
+              {tripData.startTime} — {tripData.endTime} • {tripData.duration}
             </div>
 
             <div className="text-sm text-gray-600 mt-1">
-              <Badge className=" border border-red-500 text-red-600 bg-transparent ">
-                {trip.vehicle_type}
+              <Badge className="border border-red-500 text-red-600 bg-transparent">
+                {tripData.vehicleType}
               </Badge>
               <Badge className="ml-2 bg-red-500 text-white">
-                {trip.vehicle_license_plate}
+                {tripData.licensePlate}
               </Badge>
               <Badge className="ml-2 bg-green-600 text-white">
-                {trip.available_seat} seats available
+                {tripData.availableSeats} seats available
               </Badge>
             </div>
           </div>
@@ -762,7 +837,7 @@ function TripInfoHeadBar({ trip }: { trip: Trip }) {
         <div className="flex flex-col items-start md:items-end text-sm text-gray-600">
           <span>Schedule ID</span>
           <span className="text-gray-900 font-medium">
-            {trip.vehicleRouteScheduleId}
+            {tripData.vehicleRouteScheduleId}
           </span>
         </div>
       </div>

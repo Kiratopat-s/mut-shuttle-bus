@@ -47,32 +47,105 @@ export function useBookings(
         });
     };
 
-    const transformBooking = (booking: Booking): BookingCardInfo => ({
-        id: booking.bookingId,
-        origin: booking.originStop.stopName,
-        destination: booking.destinationStop.stopName,
-        departTime: new Date(
-            booking.vehicleRouteSchedule.scheduleTime
-        ).toLocaleTimeString("th-TH", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-        }),
-        arriveTime: calculateArrivalTime(
-            booking.vehicleRouteSchedule.scheduleTime,
-            booking.vehicleRouteSchedule.route.overallTravelTime
-        ),
-        departDate: new Date(
-            booking.vehicleRouteSchedule.scheduleTime
-        ).toLocaleDateString("en-US", {
-            weekday: "short",
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-        }),
-        bookingNo: booking.bookingId.toString().padStart(20, "0"),
-        vehicleNo: booking.vehicleRouteSchedule.vehicle.licensePlate,
-    });
+    /**
+     * Calculate the actual boarding time at user's origin stop
+     * and arrival time at user's destination stop
+     */
+    const calculateUserTimes = (booking: Booking): { boardTime: string; arrivalTime: string } => {
+        const route = booking.vehicleRouteSchedule.route;
+        const routeStartTime = new Date(booking.vehicleRouteSchedule.scheduleTime);
+
+        // If route doesn't have RouteBusStop data, fall back to old calculation
+        if (!route.RouteBusStop || route.RouteBusStop.length === 0) {
+            return {
+                boardTime: routeStartTime.toLocaleTimeString("th-TH", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                }),
+                arrivalTime: calculateArrivalTime(
+                    booking.vehicleRouteSchedule.scheduleTime,
+                    route.overallTravelTime
+                ),
+            };
+        }
+
+        // Find indices of origin and destination stops
+        const originStopIndex = route.RouteBusStop.findIndex(
+            (rbs) => rbs.busStopId === booking.originStopId
+        );
+        const destinationStopIndex = route.RouteBusStop.findIndex(
+            (rbs) => rbs.busStopId === booking.destinationStopId
+        );
+
+        if (originStopIndex === -1 || destinationStopIndex === -1) {
+            // Fallback if stops not found
+            return {
+                boardTime: routeStartTime.toLocaleTimeString("th-TH", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                }),
+                arrivalTime: calculateArrivalTime(
+                    booking.vehicleRouteSchedule.scheduleTime,
+                    route.overallTravelTime
+                ),
+            };
+        }
+
+        // Calculate time to reach origin stop (when user boards)
+        let timeToOrigin = 0;
+        for (let i = 0; i < originStopIndex; i++) {
+            timeToOrigin += route.RouteBusStop[i].travelTime;
+        }
+
+        // Calculate travel time from origin to destination
+        let travelTime = 0;
+        for (let i = originStopIndex; i < destinationStopIndex; i++) {
+            travelTime += route.RouteBusStop[i].travelTime;
+        }
+
+        // Calculate actual boarding time (when bus arrives at origin)
+        const userBoardTime = new Date(routeStartTime.getTime() + timeToOrigin * 60000);
+
+        // Calculate actual arrival time (when bus arrives at destination)
+        const userArrivalTime = new Date(userBoardTime.getTime() + travelTime * 60000);
+
+        return {
+            boardTime: userBoardTime.toLocaleTimeString("th-TH", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            }),
+            arrivalTime: userArrivalTime.toLocaleTimeString("th-TH", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            }),
+        };
+    };
+
+    const transformBooking = (booking: Booking): BookingCardInfo => {
+        const { boardTime, arrivalTime } = calculateUserTimes(booking);
+
+        return {
+            id: booking.bookingId,
+            origin: booking.originStop.stopName,
+            destination: booking.destinationStop.stopName,
+            departTime: boardTime,
+            arriveTime: arrivalTime,
+            departDate: new Date(
+                booking.vehicleRouteSchedule.scheduleTime
+            ).toLocaleDateString("th-TH", {
+                weekday: "short",
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+            }),
+            bookingNo: booking.bookingId.toString().padStart(20, "0"),
+            vehicleNo: booking.vehicleRouteSchedule.vehicle.licensePlate,
+        };
+    };
 
     const fetchBookings = async () => {
         try {
