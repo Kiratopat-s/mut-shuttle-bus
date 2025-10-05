@@ -81,11 +81,14 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Set date range for the selected day (00:00:00 to 23:59:59)
-        const startOfDay = new Date(searchDate);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(searchDate);
-        endOfDay.setHours(23, 59, 59, 999);
+        // Extract date in YYYY-MM-DD format for querying
+        // This ensures we match the date portion regardless of timezone issues
+        const year = searchDate.getFullYear();
+        const month = String(searchDate.getMonth() + 1).padStart(2, '0');
+        const day = String(searchDate.getDate()).padStart(2, '0');
+        const dateOnly = `${year}-${month}-${day}`;
+
+        console.log('Searching for date:', dateOnly);
 
         // Verify bus stops exist
         const [originStop, destinationStop] = await Promise.all([
@@ -151,15 +154,61 @@ export async function GET(request: NextRequest) {
 
         const validRouteIds = validRoutes.map((r) => r.routeId);
 
+        console.log('Search Debug:', {
+            dateOnly,
+            validRouteIds,
+        });
+
         // Find schedules for these routes on the selected date
+        // First, get all schedules that match the date using raw SQL
+        const rawSchedules = await prisma.$queryRaw<Array<{
+            vehicle_route_schedule_id: number;
+            vehicle_id: number;
+            route_id: number;
+            driver_id: number;
+            schedule_time: Date;
+            status: string;
+        }>>`
+            SELECT vehicle_route_schedule_id, vehicle_id, route_id, driver_id, schedule_time, status
+            FROM vehicle_route_schedules
+            WHERE route_id = ANY(${validRouteIds})
+            AND DATE(schedule_time) = ${dateOnly}::date
+            AND status = 'UPCOMING'
+        `;
+
+        console.log('Raw schedules found:', rawSchedules.length);
+
+        if (rawSchedules.length === 0) {
+            return NextResponse.json(
+                {
+                    success: true,
+                    data: {
+                        routes: [],
+                        count: 0,
+                        searchCriteria: {
+                            date: searchDate.toISOString(),
+                            originStop: {
+                                busStopId: originStop.busStopId,
+                                stopName: originStop.stopName,
+                            },
+                            destinationStop: {
+                                busStopId: destinationStop.busStopId,
+                                stopName: destinationStop.stopName,
+                            },
+                            guests,
+                        },
+                    },
+                    message: "No routes found for the selected date",
+                },
+                { status: 200 }
+            );
+        }
+
+        // Now fetch full schedule details with relations
+        const scheduleIds = rawSchedules.map(s => s.vehicle_route_schedule_id);
         const schedules = await prisma.vehicleRouteSchedule.findMany({
             where: {
-                routeId: { in: validRouteIds },
-                scheduleTime: {
-                    gte: startOfDay,
-                    lte: endOfDay,
-                },
-                status: "UPCOMING", // Only show upcoming schedules
+                vehicleRouteScheduleId: { in: scheduleIds },
             },
             include: {
                 route: {
@@ -177,7 +226,7 @@ export async function GET(request: NextRequest) {
                 vehicle: {
                     include: {
                         vehicleType: true,
-                        busStop: true, // current stop
+                        busStop: true,
                     },
                 },
                 driver: {
@@ -189,10 +238,20 @@ export async function GET(request: NextRequest) {
                 },
                 Booking: {
                     where: {
-                        status: "BOOKED", // Only count active bookings
+                        status: "BOOKED",
                     },
                 },
             },
+        });
+
+        console.log('Schedules found:', schedules.length);
+        schedules.forEach(s => {
+            console.log('Schedule:', {
+                id: s.vehicleRouteScheduleId,
+                scheduleTime: s.scheduleTime,
+                scheduleTimeISO: new Date(s.scheduleTime).toISOString(),
+                routeId: s.routeId,
+            });
         });
 
         // Calculate available seats and format response
