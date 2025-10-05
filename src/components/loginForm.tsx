@@ -49,6 +49,7 @@ export default function LoginForm() {
     } catch (err) {
       setError(`เกิดข้อผิดพลาดในการเข้าสู่ระบบ`);
       console.error("Login error:", err);
+      
     } finally {
       setIsLoading(false);
     }
