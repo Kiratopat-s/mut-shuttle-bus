@@ -52,9 +52,7 @@ function QrPassanger({
       <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
         <CardHeader className="relative">
           <CardTitle>MUT shuttle bus</CardTitle>
-          <CardDescription>
-            better way to travel around the city
-          </CardDescription>
+          <CardDescription></CardDescription>
           <div className="flex flex-col text-right absolute right-4 gap-1.5">
             <CardTitle>Booking</CardTitle>
             <CardDescription className="text-xs">
