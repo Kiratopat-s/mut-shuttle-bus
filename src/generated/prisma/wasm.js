@@ -268,7 +268,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/chatchaponchuwongwut/Desktop/mut/project/mut-shuttle-bus/src/generated/prisma",
+      "value": "/Users/kiratipatsawangsisombat/Desktop/MUT/Y_2 T1/MIIC1322/shuttle-buss/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -286,7 +286,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/chatchaponchuwongwut/Desktop/mut/project/mut-shuttle-bus/prisma/schema.prisma",
+    "sourceFilePath": "/Users/kiratipatsawangsisombat/Desktop/MUT/Y_2 T1/MIIC1322/shuttle-buss/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
