@@ -83,7 +83,8 @@ export async function GET(req: NextRequest) {
     const transformedSchedules = schedules.map(schedule => {
       const routeStops = schedule.route.RouteBusStop;
       const firstStop = routeStops[0]?.busStop;
-      const lastStop = routeStops[routeStops.length - 1]?.busStop;
+      const lastStop = routeStops[routeStops.length - 1]?.nextStop || routeStops[routeStops.length - 1]?.busStop;
+
 
       // Calculate estimated arrival time based on route travel time
       const departureTime = new Date(schedule.scheduleTime);
