@@ -1,5 +1,5 @@
 import { QRCodeSVG } from "qrcode.react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -35,6 +35,26 @@ function QrPassanger({
   bookingData,
 }: QrPassangerProps) {
   const { user } = useUserInformation();
+
+  useEffect(() => {
+    const eventSource = new EventSource("/api/scan-status");
+
+    eventSource.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      if (data.status === "scanned") {
+        alert("✅ QR code has been scanned successfully!");
+
+        window.location.reload();
+
+        if (onClose) onClose();
+
+        eventSource.close();
+      }
+    };
+
+    return () => eventSource.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!bookingData) {
     return null;
