@@ -59,19 +59,21 @@ function SearchPageContent() {
       vehicle_type: route.vehicle.vehicleType.vehicleTypeName,
       vehicle_seat: route.vehicle.capacity,
       vehicle_route_start_time: new Date(route.startTime).toLocaleTimeString(
-        "th-TH",
+        "en-US",
         {
           hour: "2-digit",
           minute: "2-digit",
           hour12: false,
+          timeZone: "Asia/Bangkok",
         }
       ),
       vehicle_route_end_time: new Date(route.endTime).toLocaleTimeString(
-        "th-TH",
+        "en-US",
         {
           hour: "2-digit",
           minute: "2-digit",
           hour12: false,
+          timeZone: "Asia/Bangkok",
         }
       ),
       vehicle_route_duration: `${route.travelTime} min`,
