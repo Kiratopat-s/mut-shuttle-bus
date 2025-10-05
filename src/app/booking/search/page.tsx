@@ -64,7 +64,6 @@ function SearchPageContent() {
           hour: "2-digit",
           minute: "2-digit",
           hour12: false,
-          timeZone: "Asia/Bangkok",
         }
       ),
       vehicle_route_end_time: new Date(route.endTime).toLocaleTimeString(
@@ -73,7 +72,6 @@ function SearchPageContent() {
           hour: "2-digit",
           minute: "2-digit",
           hour12: false,
-          timeZone: "Asia/Bangkok",
         }
       ),
       vehicle_route_duration: `${route.travelTime} min`,

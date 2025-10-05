@@ -206,6 +206,25 @@ export async function GET(request: NextRequest) {
 
         // Now fetch full schedule details with relations
         const scheduleIds = rawSchedules.map(s => s.vehicle_route_schedule_id);
+
+        // Fetch schedules with timezone handling
+        // Since the DB stores timestamp without timezone, we need to treat it as Bangkok time
+        const schedulesWithTimezone = await prisma.$queryRaw<Array<{
+            vehicle_route_schedule_id: number;
+            schedule_time_with_tz: Date;
+        }>>`
+            SELECT 
+                vehicle_route_schedule_id,
+                (schedule_time AT TIME ZONE 'Asia/Bangkok') as schedule_time_with_tz
+            FROM vehicle_route_schedules
+            WHERE vehicle_route_schedule_id = ANY(${scheduleIds})
+        `;
+
+        // Create a map of schedule times
+        const scheduleTimeMap = new Map(
+            schedulesWithTimezone.map(s => [s.vehicle_route_schedule_id, s.schedule_time_with_tz])
+        );
+
         const schedules = await prisma.vehicleRouteSchedule.findMany({
             where: {
                 vehicleRouteScheduleId: { in: scheduleIds },
@@ -280,10 +299,12 @@ export async function GET(request: NextRequest) {
                 travelTime += route.RouteBusStop[i].travelTime;
             }
 
-            // Calculate actual start time (when bus arrives at origin stop) and end time
-            const routeStartTime = new Date(schedule.scheduleTime); // Route departure from first stop
-            const startTime = new Date(routeStartTime.getTime() + timeToOrigin * 60000); // When user boards at origin
-            const endTime = new Date(startTime.getTime() + travelTime * 60000); // When user arrives at destination
+            // schedule.scheduleTime is a Date object from Prisma
+            // Use the corrected timezone-aware time from our query
+            const correctedScheduleTime = scheduleTimeMap.get(schedule.vehicleRouteScheduleId) || schedule.scheduleTime;
+            const routeStartTime = new Date(correctedScheduleTime);
+            const startTime = new Date(routeStartTime.getTime() + timeToOrigin * 60000);
+            const endTime = new Date(startTime.getTime() + travelTime * 60000);
 
             return {
                 vehicleRouteScheduleId: schedule.vehicleRouteScheduleId,
