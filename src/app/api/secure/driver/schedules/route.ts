@@ -25,11 +25,11 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const dateParam = searchParams.get("date");
     const startDate = dateParam ? new Date(dateParam) : new Date();
-    
+
     // Set date range (from start of day to end of day)
     const startOfDay = new Date(startDate);
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date(startDate);
     endOfDay.setHours(23, 59, 59, 999);
 
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
       const routeStops = schedule.route.RouteBusStop;
       const firstStop = routeStops[0]?.busStop;
       const lastStop = routeStops[routeStops.length - 1]?.busStop;
-      
+
       // Calculate estimated arrival time based on route travel time
       const departureTime = new Date(schedule.scheduleTime);
       const arrivalTime = new Date(departureTime.getTime() + (schedule.route.overallTravelTime * 60000)); // Convert minutes to milliseconds
@@ -92,23 +92,23 @@ export async function GET(req: NextRequest) {
       return {
         id: schedule.vehicleRouteScheduleId.toString(),
         routeName: schedule.route.routeName,
-        departureTime: departureTime.toLocaleTimeString('th-TH', { 
-          hour: '2-digit', 
+        departureTime: departureTime.toLocaleTimeString('en-EN', {
+          hour: '2-digit',
           minute: '2-digit',
-          hour12: false 
+          hour12: false
         }),
-        arrivalTime: arrivalTime.toLocaleTimeString('th-TH', { 
-          hour: '2-digit', 
+        arrivalTime: arrivalTime.toLocaleTimeString('en-EN', {
+          hour: '2-digit',
           minute: '2-digit',
-          hour12: false 
+          hour12: false
         }),
         startLocation: firstStop?.stopName || "ไม่ระบุ",
         endLocation: lastStop?.stopName || "ไม่ระบุ",
         passengerCount: schedule.Booking.length,
         maxPassengers: schedule.vehicle.capacity,
-        status: schedule.status.toLowerCase() === 'upcoming' ? 'pending' : 
-                schedule.status.toLowerCase() === 'ongoing' ? 'in-progress' : 
-                schedule.status.toLowerCase() === 'completed' ? 'completed' : 'pending',
+        status: schedule.status.toLowerCase() === 'upcoming' ? 'pending' :
+          schedule.status.toLowerCase() === 'ongoing' ? 'in-progress' :
+            schedule.status.toLowerCase() === 'completed' ? 'completed' : 'pending',
         date: startDate.toISOString().split('T')[0],
         vehicleInfo: {
           licensePlate: schedule.vehicle.licensePlate,
