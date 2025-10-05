@@ -53,7 +53,13 @@ export function TripCard({ trip, onBook, wantedSeat }: TripCardProps) {
             <div className="flex items-center gap-2">
               <div className="text-center">
                 <div className="text-lg font-bold text-gray-900 font-mono">
-                  {trip.vehicle_route_start_time}
+                  {new Date(
+                    `1970-01-01T${trip.vehicle_route_start_time}Z`
+                  ).toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}
                 </div>
                 <div className="text-xs text-gray-500">Departure</div>
               </div>
@@ -67,7 +73,13 @@ export function TripCard({ trip, onBook, wantedSeat }: TripCardProps) {
 
               <div className="text-center">
                 <div className="text-lg font-bold text-gray-900 font-mono">
-                  {trip.vehicle_route_end_time}
+                  {new Date(
+                    `1970-01-01T${trip.vehicle_route_end_time}Z`
+                  ).toLocaleTimeString("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })}
                 </div>
                 <div className="text-xs text-gray-500">Arrival</div>
               </div>
