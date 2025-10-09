@@ -352,7 +352,7 @@ export function useActiveBookings(): UseBookingsResult {
         // Identify missed bookings
         for (const booking of fetchedBookings) {
             const boardingTime = calculateUserBoardingTime(booking);
-            
+
             // If the boarding time has passed, mark as missed
             if (boardingTime < now) {
                 missedBookingIds.push(booking.bookingId);
@@ -365,7 +365,7 @@ export function useActiveBookings(): UseBookingsResult {
         // Update missed bookings in the backend
         if (missedBookingIds.length > 0) {
             console.log(`Updating ${missedBookingIds.length} missed booking(s) to MISSED status`);
-            
+
             // Update each missed booking
             const updatePromises = missedBookingIds.map(async (bookingId) => {
                 try {
@@ -393,10 +393,10 @@ export function useActiveBookings(): UseBookingsResult {
 
             // Fetch all BOOKED bookings
             const data = await bookingApi.getUserBookings(undefined, "BOOKED");
-            
+
             // Check and update missed bookings
             const activeBookings = await checkAndUpdateMissedBookings(data);
-            
+
             // Transform and set only the active (not missed) bookings
             const transformedBookings = activeBookings.map(transformBooking);
             setBookings(transformedBookings);
@@ -424,7 +424,7 @@ export function useActiveBookings(): UseBookingsResult {
 
     useEffect(() => {
         fetchActiveBookings();
-        
+
         // Set up interval to check for missed bookings every minute
         const intervalId = setInterval(() => {
             console.log("Periodic check for missed bookings");

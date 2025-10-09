@@ -51,6 +51,7 @@ interface MiniBookingCardProps {
 function MiniBookingCard({
   handleOpenQrPassengerModal,
   bookingInfo,
+  isPast = false,
 }: MiniBookingCardProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -91,27 +92,29 @@ function MiniBookingCard({
             <div className="flex flex-col gap-2 w-full">
               <div className="flex justify-between w-full items-center">
                 <p>Departs {bookingInfo.departDate}</p>
-                <Popover open={isOpen} onOpenChange={setIsOpen}>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="hover:bg-gray-100 rounded-full p-1 transition-colors z-100 cursor-pointer"
-                      aria-label="Booking options"
-                    >
-                      <EllipsisVertical className="scale-90 text-gray-500" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-40">
-                    <Button
-                      variant="destructive"
-                      className="w-full cursor-pointer"
-                      onClick={handleCancelClick}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Cancelling..." : "Cancel Booking"}
-                    </Button>
-                  </PopoverContent>
-                </Popover>
+                {!isPast && (
+                  <Popover open={isOpen} onOpenChange={setIsOpen}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="hover:bg-gray-100 rounded-full p-1 transition-colors z-100 cursor-pointer"
+                        aria-label="Booking options"
+                      >
+                        <EllipsisVertical className="scale-90 text-gray-500" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-40">
+                      <Button
+                        variant="destructive"
+                        className="w-full cursor-pointer"
+                        onClick={handleCancelClick}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Cancelling..." : "Cancel Booking"}
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+                )}
               </div>
               <OriginToDestination
                 origin={bookingInfo.origin}
@@ -130,16 +133,20 @@ function MiniBookingCard({
                     <p className="text-black">{bookingInfo.vehicleNo}</p>
                   </div>
                 </div>
-                <div className="flex flex-col justify-center items-center">
-                  <QrCode className="text-red-500 scale-125" />
-                </div>
+                {!isPast && (
+                  <div className="flex flex-col justify-center items-center">
+                    <QrCode className="text-red-500 scale-125" />
+                  </div>
+                )}
               </div>
-              <ButtonWithIcon
-                onclick={handleClick}
-                name="Check In QR code"
-                icon={<TicketCheck />}
-                className="bg-red-500 text-white cursor-pointer hover:bg-red-600 hover:text-white"
-              />
+              {!isPast && (
+                <ButtonWithIcon
+                  onclick={handleClick}
+                  name="Check In QR code"
+                  icon={<TicketCheck />}
+                  className="bg-red-500 text-white cursor-pointer hover:bg-red-600 hover:text-white"
+                />
+              )}
             </div>
           </CardContent>
         </Card>
