@@ -1,139 +1,189 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Shield, Settings, Users, Car, Calendar, FileText, Save, RotateCcw } from 'lucide-react'
-
-interface Permission {
-  id: string
-  system: string
-  description: string
-  icon: React.ReactNode
-  roles: {
-    admin: boolean
-    driver: boolean
-    student: boolean
-  }
-}
+import { useState, useEffect } from "react";
+import { Shield, Save, RotateCcw, Loader2 } from "lucide-react";
+import {
+  permissionApi,
+  Permission,
+  RoleInfo,
+} from "@/lib/permission-api-client";
 
 export default function PermissionPage() {
-  const [permissions, setPermissions] = useState<Permission[]>([
-    {
-      id: '1',
-      system: 'จัดการผู้ใช้',
-      description: 'เพิ่ม แก้ไข ลบข้อมูลผู้ใช้งาน',
-      icon: <Users className="w-5 h-5" />,
-      roles: {
-        admin: true,
-        driver: false,
-        student: false
-      }
-    },
-    {
-      id: '2',
-      system: 'จองรถรับส่ง',
-      description: 'จองและยกเลิกการจองรถรับส่ง',
-      icon: <Calendar className="w-5 h-5" />,
-      roles: {
-        admin: true,
-        driver: false,
-        student: true
-      }
-    },
-    {
-      id: '3',
-      system: 'จัดการรถรับส่ง',
-      description: 'จัดการเส้นทาง ตารางเวลา และข้อมูลรถ',
-      icon: <Car className="w-5 h-5" />,
-      roles: {
-        admin: true,
-        driver: true,
-        student: false
-      }
-    },
-    {
-      id: '4',
-      system: 'ดูรายงาน',
-      description: 'เข้าถึงรายงานการใช้งานและสถิติ',
-      icon: <FileText className="w-5 h-5" />,
-      roles: {
-        admin: true,
-        driver: false,
-        student: false
-      }
-    },
-    {
-      id: '5',
-      system: 'ตั้งค่าระบบ',
-      description: 'เปลี่ยนแปลงการตั้งค่าทั่วไปของระบบ',
-      icon: <Settings className="w-5 h-5" />,
-      roles: {
-        admin: true,
-        driver: false,
-        student: false
-      }
-    },
-    {
-      id: '6',
-      system: 'จัดการสิทธิ์',
-      description: 'กำหนดสิทธิ์การใช้งานให้กับผู้ใช้',
-      icon: <Shield className="w-5 h-5" />,
-      roles: {
-        admin: true,
-        driver: false,
-        student: false
-      }
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [roles, setRoles] = useState<RoleInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [pendingChanges, setPendingChanges] = useState<
+    Map<string, { roleId: number; permissionId: number; granted: boolean }>
+  >(new Map());
+
+  // Fetch permissions on mount
+  useEffect(() => {
+    fetchPermissions();
+  }, []);
+
+  const fetchPermissions = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await permissionApi.getPermissions();
+      setPermissions(data.permissions);
+      setRoles(data.roles);
+      setPendingChanges(new Map());
+      setHasChanges(false);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load permissions";
+      setError(message);
+      console.error("Failed to fetch permissions:", err);
+    } finally {
+      setIsLoading(false);
     }
-  ])
+  };
 
-  const [hasChanges, setHasChanges] = useState(false)
+  const handleRoleToggle = (permissionId: number, roleName: string) => {
+    const role = roles.find((r) => r.roleName === roleName);
+    if (!role) return;
 
-  const handleRoleToggle = (permissionId: string, role: keyof Permission['roles']) => {
-    setPermissions(prev => 
-      prev.map(permission => 
-        permission.id === permissionId 
+    const changeKey = `${permissionId}-${role.roleId}`;
+    const currentValue =
+      permissions.find((p) => p.permissionId === permissionId)?.roles[
+        roleName
+      ] || false;
+    const newValue = !currentValue;
+
+    // Update local state optimistically
+    setPermissions((prev) =>
+      prev.map((permission) =>
+        permission.permissionId === permissionId
           ? {
               ...permission,
               roles: {
                 ...permission.roles,
-                [role]: !permission.roles[role]
-              }
+                [roleName]: newValue,
+              },
             }
           : permission
       )
-    )
-    setHasChanges(true)
-  }
+    );
 
-  const handleSave = () => {
-    // Mock save to API
-    console.log('Saving permissions:', permissions)
-    alert('บันทึกการเปลี่ยนแปลงเรียบร้อยแล้ว!')
-    setHasChanges(false)
-  }
+    // Track the change
+    const newChanges = new Map(pendingChanges);
+    newChanges.set(changeKey, {
+      roleId: role.roleId,
+      permissionId,
+      granted: newValue,
+    });
+    setPendingChanges(newChanges);
+    setHasChanges(true);
+  };
 
-  const handleReset = () => {
-    if (window.confirm('คุณต้องการรีเซ็ตการเปลี่ยนแปลงทั้งหมดหรือไม่?')) {
-      // Reset to default or reload from server
-      window.location.reload()
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      setError(null);
+
+      // Save all pending changes
+      await Promise.all(
+        Array.from(pendingChanges.values()).map((change) =>
+          permissionApi.updateRolePermission(
+            change.roleId,
+            change.permissionId,
+            change.granted
+          )
+        )
+      );
+
+      setPendingChanges(new Map());
+      setHasChanges(false);
+      alert("บันทึกการเปลี่ยนแปลงเรียบร้อยแล้ว!");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to save changes";
+      setError(message);
+      alert(`เกิดข้อผิดพลาด: ${message}`);
+    } finally {
+      setIsSaving(false);
     }
-  }
+  };
+
+  const handleReset = async () => {
+    if (confirm("คุณต้องการรีเซ็ตการเปลี่ยนแปลงทั้งหมดหรือไม่?")) {
+      await fetchPermissions();
+    }
+  };
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
-      case 'admin': return 'ผู้ดูแลระบบ'
-      case 'driver': return 'คนขับรถ' 
-      case 'student': return 'นักศึกษา'
-      default: return role
+      case "admin":
+        return "ผู้ดูแลระบบ";
+      case "driver":
+        return "คนขับรถ";
+      case "student":
+        return "นักศึกษา";
+      case "teacher":
+        return "ครู";
+      default:
+        return role;
     }
-  }
+  };
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800'
-      case 'driver': return 'bg-blue-100 text-blue-800'
-      case 'student': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case "admin":
+        return "bg-red-100 text-red-800";
+      case "driver":
+        return "bg-blue-100 text-blue-800";
+      case "student":
+        return "bg-green-100 text-green-800";
+      case "teacher":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const getRoleToggleColor = (role: string) => {
+    switch (role) {
+      case "admin":
+        return { active: "bg-red-600", focus: "focus:ring-red-500" };
+      case "driver":
+        return { active: "bg-blue-600", focus: "focus:ring-blue-500" };
+      case "student":
+        return { active: "bg-green-600", focus: "focus:ring-green-500" };
+      case "teacher":
+        return { active: "bg-purple-600", focus: "focus:ring-purple-500" };
+      default:
+        return { active: "bg-gray-600", focus: "focus:ring-gray-500" };
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-6xl mx-auto p-6">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error && permissions.length === 0) {
+    return (
+      <div className="w-full max-w-6xl mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">{error}</p>
+          <button
+            onClick={fetchPermissions}
+            className="mt-2 text-sm text-red-600 underline hover:no-underline"
+          >
+            ลองใหม่อีกครั้ง
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -141,12 +191,16 @@ export default function PermissionPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 bg-purple-100 rounded-lg">
-            <Shield className="w-8 h-8 text-purple-600" />
+          <div className="p-3 bg-red-100 rounded-lg">
+            <Shield className="w-8 h-8 text-red-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">จัดการสิทธิ์ระบบ</h1>
-            <p className="text-gray-600">กำหนดสิทธิ์การเข้าถึงระบบต่างๆ สำหรับแต่ละบทบาท</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              จัดการสิทธิ์ระบบ
+            </h1>
+            <p className="text-gray-600">
+              กำหนดสิทธิ์การเข้าถึงระบบต่างๆ สำหรับแต่ละบทบาท
+            </p>
           </div>
         </div>
 
@@ -155,14 +209,16 @@ export default function PermissionPage() {
           <div className="flex gap-3 mb-4">
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              disabled={isSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 active:bg-red-800 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
-              บันทึกการเปลี่ยนแปลง
+              {isSaving ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
             </button>
             <button
               onClick={handleReset}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              disabled={isSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-gray-800 active:bg-gray-900 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RotateCcw className="w-4 h-4" />
               รีเซ็ต
@@ -172,110 +228,110 @@ export default function PermissionPage() {
       </div>
 
       {/* Permission Matrix Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-md border-2 border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-red-800 text-white">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">ระบบ</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">รายละเอียด</th>
-                <th className="px-6 py-4 text-center text-sm font-medium text-red-700">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                    ผู้ดูแลระบบ
-                  </span>
+                <th className="px-6 py-4 text-left text-sm font-semibold">
+                  สิทธิ์
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-medium text-blue-700">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    คนขับรถ
-                  </span>
-                </th>
-                <th className="px-6 py-4 text-center text-sm font-medium text-green-700">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    นักศึกษา
-                  </span>
-                </th>
+                {roles.map((role) => (
+                  <th
+                    key={role.roleId}
+                    className="px-6 py-4 text-center text-sm font-semibold"
+                  >
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(
+                        role.roleName
+                      )}`}
+                    >
+                      {getRoleDisplayName(role.roleName)}
+                    </span>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {permissions.map((permission) => (
-                <tr key={permission.id} className="hover:bg-gray-50">
+                <tr
+                  key={permission.permissionId}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-gray-100 rounded-lg text-gray-600">
-                        {permission.icon}
+                        <Shield className="w-5 h-5" />
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">{permission.system}</div>
+                        <div className="font-semibold text-gray-900">
+                          {permission.permissionName}
+                        </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">
-                    {permission.description}
-                  </td>
-                  
-                  {/* Admin Column */}
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => handleRoleToggle(permission.id, 'admin')}
-                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${
-                        permission.roles.admin ? 'bg-red-600' : 'bg-gray-200'
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          permission.roles.admin ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </td>
 
-                  {/* Driver Column */}
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => handleRoleToggle(permission.id, 'driver')}
-                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                        permission.roles.driver ? 'bg-blue-600' : 'bg-gray-200'
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          permission.roles.driver ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </td>
+                  {roles.map((role) => {
+                    const isGranted = permission.roles[role.roleName] || false;
+                    const toggleColor = getRoleToggleColor(role.roleName);
 
-                  {/* Student Column */}
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => handleRoleToggle(permission.id, 'student')}
-                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-                        permission.roles.student ? 'bg-green-600' : 'bg-gray-200'
-                      }`}
-                    >
-                      <span
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          permission.roles.student ? 'translate-x-5' : 'translate-x-0'
-                        }`}
-                      />
-                    </button>
-                  </td>
+                    return (
+                      <td key={role.roleId} className="px-6 py-4 text-center">
+                        <button
+                          onClick={() =>
+                            handleRoleToggle(
+                              permission.permissionId,
+                              role.roleName
+                            )
+                          }
+                          disabled={isSaving}
+                          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                            isGranted ? toggleColor.active : "bg-gray-200"
+                          } ${toggleColor.focus}`}
+                          title={`${
+                            isGranted ? "เพิกถอน" : "ให้"
+                          }สิทธิ์ ${getRoleDisplayName(role.roleName)}`}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                              isGranted ? "translate-x-5" : "translate-x-0"
+                            }`}
+                          />
+                        </button>
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        {permissions.length === 0 && (
+          <div className="text-center py-12 bg-gray-50">
+            <p className="text-gray-500">ไม่พบข้อมูลสิทธิ์</p>
+          </div>
+        )}
       </div>
 
       {/* Summary */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        {(['admin', 'driver', 'student'] as const).map((role) => {
-          const rolePermissions = permissions.filter(p => p.roles[role])
+        {roles.map((role) => {
+          const rolePermissions = permissions.filter(
+            (p) => p.roles[role.roleName]
+          );
           return (
-            <div key={role} className="bg-white rounded-lg border border-gray-200 p-4">
+            <div
+              key={role.roleId}
+              className="bg-white rounded-lg border-2 border-gray-200 p-4"
+            >
               <div className="flex items-center gap-2 mb-3">
-                <div className={`px-3 py-1 rounded-full text-sm font-medium ${getRoleBadgeColor(role)}`}>
-                  {getRoleDisplayName(role)}
+                <div
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${getRoleBadgeColor(
+                    role.roleName
+                  )}`}
+                >
+                  {getRoleDisplayName(role.roleName)}
                 </div>
                 <span className="text-sm text-gray-500">
                   ({rolePermissions.length} สิทธิ์)
@@ -283,9 +339,12 @@ export default function PermissionPage() {
               </div>
               <div className="space-y-2">
                 {rolePermissions.map((permission) => (
-                  <div key={permission.id} className="flex items-center gap-2 text-sm text-gray-600">
-                    {permission.icon}
-                    <span>{permission.system}</span>
+                  <div
+                    key={permission.permissionId}
+                    className="flex items-center gap-2 text-sm text-gray-600"
+                  >
+                    <Shield className="w-4 h-4" />
+                    <span>{permission.permissionName}</span>
                   </div>
                 ))}
                 {rolePermissions.length === 0 && (
@@ -293,25 +352,28 @@ export default function PermissionPage() {
                 )}
               </div>
             </div>
-          )
+          );
         })}
       </div>
 
       {/* Save Button (Fixed at bottom when changes exist) */}
       {hasChanges && (
-        <div className="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+        <div className="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border-2 border-gray-200 p-4">
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600">มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก</span>
+            <span className="text-sm text-gray-600">
+              มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก
+            </span>
             <button
               onClick={handleSave}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              disabled={isSaving}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 active:bg-red-800 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
-              บันทึก
+              {isSaving ? "กำลังบันทึก..." : "บันทึก"}
             </button>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
