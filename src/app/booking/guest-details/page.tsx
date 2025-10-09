@@ -38,6 +38,8 @@ import {
   bookingApi,
   type BookingCreateRequest,
 } from "@/lib/booking-api-client";
+import { useUserInformation } from "@/provider/UserProvider";
+import { userApi } from "@/lib/user-api-client";
 
 // Zod schema for guest form validation
 const GuestFormSchema = z.object({
@@ -87,6 +89,7 @@ interface TripData {
 function GuestDetailsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useUserInformation();
 
   // Parse trip data from URL
   const tripData: TripData | null = (() => {
@@ -252,45 +255,83 @@ function GuestDetailsPageContent() {
   }, [guestForms, validationErrors]);
 
   const fillMyInfo = useCallback(() => {
-    // TODO: Fetch current user data from API
-    const currentUserData = {
-      email: "john.doe@example.com",
-      firstName: "John",
-      lastName: "Doe",
-      phoneNumber: "0812345678",
+    if (!user) {
+      console.warn("No user information available to fill");
+      return;
+    }
+
+    // Fill the first guest form with current user's information
+    const currentUserData: GuestForm = {
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phoneNumber: "", // Note: Phone number not available in User model
     };
+
     setGuestForms((prev) =>
       prev.map((guest, i) => (i === 0 ? { ...currentUserData } : guest))
     );
-  }, []);
+
+    // Validate the filled form
+    setValidationErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[0] = {};
+      return newErrors;
+    });
+  }, [user]);
 
   const autoFillFromEmail = useCallback(
     async (email: string, guestIndex: number) => {
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+      // Validate email format before making API call
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        console.log("Invalid email format, skipping auto-fill");
+        return;
+      }
 
-      // Mock user lookup - replace with actual API call
-      const mockUserDatabase = [
-        {
-          email: "jane.smith@example.com",
-          firstName: "Jane",
-          lastName: "Smith",
-          phoneNumber: "0823456789",
-        },
-        {
-          email: "alice.wong@example.com",
-          firstName: "Alice",
-          lastName: "Wong",
-          phoneNumber: "0834567890",
-        },
-      ];
+      try {
+        console.log(`Searching for user with email: ${email}`);
 
-      const userData = mockUserDatabase.find((user) => user.email === email);
-      if (userData) {
-        setGuestForms((prev) =>
-          prev.map((guest, i) =>
-            i === guestIndex ? { ...guest, ...userData } : guest
-          )
-        );
+        // Call API to search for user by email
+        const result = await userApi.searchUserByEmail(email);
+
+        if (result.user) {
+          // User found in system - auto-fill their information
+          console.log("User found in system:", result.user);
+
+          setGuestForms((prev) =>
+            prev.map((guest, i) =>
+              i === guestIndex
+                ? {
+                    ...guest,
+                    email: result.user!.email,
+                    firstName: result.user!.firstName,
+                    lastName: result.user!.lastName,
+                    // Phone number still needs to be entered manually
+                    phoneNumber: guest.phoneNumber, // Keep existing value
+                  }
+                : guest
+            )
+          );
+
+          // Clear validation errors for auto-filled fields
+          setValidationErrors((prev) => {
+            const newErrors = [...prev];
+            if (newErrors[guestIndex]) {
+              delete newErrors[guestIndex].email;
+              delete newErrors[guestIndex].firstName;
+              delete newErrors[guestIndex].lastName;
+            }
+            return newErrors;
+          });
+        } else {
+          // User not found - treat as external user
+          console.log("User not found in system - treating as external user");
+          // Email is already set, user will need to fill rest manually
+        }
+      } catch (error) {
+        console.error("Error searching for user:", error);
+        // Don't show error to user - just treat as external user
+        // User can continue filling the form manually
       }
     },
     []
@@ -460,6 +501,7 @@ function GuestDetailsPageContent() {
               onEmailChange={(email) => autoFillFromEmail(email, index)}
               onFillMyInfo={index === 0 ? fillMyInfo : undefined}
               onBlur={() => validateSingleGuest(index)}
+              hasUserData={!!user}
             />
           ))}
         </Accordion>
@@ -609,6 +651,7 @@ function GuestFormAccordion({
   onEmailChange,
   onFillMyInfo,
   onBlur,
+  hasUserData = false,
 }: {
   guestNumber: number;
   guestForm: GuestForm;
@@ -617,7 +660,10 @@ function GuestFormAccordion({
   onEmailChange?: (email: string) => void;
   onFillMyInfo?: () => void;
   onBlur?: () => void;
+  hasUserData?: boolean;
 }) {
+  const [isSearchingUser, setIsSearchingUser] = useState(false);
+
   const hasErrors = Object.keys(errors).length > 0;
   const isComplete =
     guestForm.email &&
@@ -628,8 +674,25 @@ function GuestFormAccordion({
 
   const handleEmailChange = (email: string) => {
     onUpdate("email", email);
-    if (onEmailChange) {
-      onEmailChange(email);
+  };
+
+  const handleEmailBlur = async () => {
+    // First validate the field
+    if (onBlur) {
+      onBlur();
+    }
+
+    // Then try to auto-fill if email is valid and fields are empty
+    if (
+      guestForm.email &&
+      !errors.email &&
+      !guestForm.firstName &&
+      !guestForm.lastName &&
+      onEmailChange
+    ) {
+      setIsSearchingUser(true);
+      await onEmailChange(guestForm.email);
+      setIsSearchingUser(false);
     }
   };
 
@@ -685,7 +748,13 @@ function GuestFormAccordion({
                   variant="outline"
                   size="sm"
                   onClick={onFillMyInfo}
+                  disabled={!hasUserData}
                   className="text-xs px-2 py-1 h-auto"
+                  title={
+                    hasUserData
+                      ? "Fill with your account information"
+                      : "Please log in to use this feature"
+                  }
                 >
                   <UserCheck className="w-3 h-3 mr-1" />
                   Fill my info
@@ -698,7 +767,8 @@ function GuestFormAccordion({
               placeholder="Enter email address"
               value={guestForm.email}
               onChange={(e) => handleEmailChange(e.target.value)}
-              onBlur={onBlur}
+              onBlur={handleEmailBlur}
+              disabled={isSearchingUser}
               className={
                 errors.email
                   ? "border-red-500 focus-visible:border-red-500"
@@ -707,6 +777,12 @@ function GuestFormAccordion({
                   : ""
               }
             />
+            {isSearchingUser && (
+              <div className="flex items-center gap-1 text-sm text-blue-600 mt-1">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Searching for user...
+              </div>
+            )}
             {errors.email ? (
               <div className="flex items-center gap-1 text-sm text-red-600 mt-1">
                 <AlertCircle className="w-3 h-3" />
