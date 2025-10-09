@@ -89,6 +89,29 @@ export function validateRequiredFields(
 }
 
 /**
+ * Require admin authentication
+ */
+export async function requireAdminAuth(): Promise<DecodedUser | NextResponse> {
+    const user = await getAuthUser();
+
+    if (!user) {
+        return NextResponse.json(
+            { error: "Unauthorized" },
+            { status: 401 }
+        );
+    }
+
+    if (user.role.roleName !== "admin") {
+        return NextResponse.json(
+            { error: "Forbidden - Admin access required" },
+            { status: 403 }
+        );
+    }
+
+    return user;
+}
+
+/**
  * Handle API errors
  */
 export function handleApiError(error: unknown): NextResponse {
