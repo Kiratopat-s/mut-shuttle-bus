@@ -32,6 +32,7 @@ interface MiniBookingCardProps {
     departDate: string;
     bookingNo: string;
     vehicleNo: string;
+    scheduleDateTime?: string;
   }) => void;
   bookingInfo: {
     id: number;
@@ -42,6 +43,7 @@ interface MiniBookingCardProps {
     departDate: string;
     bookingNo: string;
     vehicleNo: string;
+    scheduleDateTime?: string;
   };
   isPast?: boolean;
 }

@@ -1,7 +1,7 @@
 "use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MiniBookingCard from "./miniBookingCard";
-import { useActiveBookings, BookingCardInfo } from "@/hooks/useBookings";
+import { useAllBookings, BookingCardInfo } from "@/hooks/useBookings";
 import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -9,39 +9,67 @@ import { AlertCircle, CalendarX } from "lucide-react";
 import QrPassanger from "./modals/qrPassangerModal";
 
 export function BookingHistoryTab() {
-  const { bookings, loading, error, refetch } = useActiveBookings();
+  const { bookings, loading, error, refetch } = useAllBookings(); // Changed from useActiveBookings
   const [selectedBooking, setSelectedBooking] =
     useState<BookingCardInfo | null>(null);
   const [qrModalOpen, setQrModalOpen] = useState(false);
 
-  // Split bookings into upcoming and past based on depart date
+  // Split bookings into upcoming and past based on schedule datetime
   const { upcomingBookings, pastBookings } = useMemo(() => {
     const now = new Date();
+    console.log("Current time:", now);
+    console.log("Total bookings:", bookings.length);
 
     const upcoming = bookings
       .filter((booking) => {
-        // Parse the date string (e.g., "Fri, 26 Sep 2025")
+        // Use the raw schedule datetime for accurate comparison
+        if (booking.scheduleDateTime) {
+          const scheduleDate = new Date(booking.scheduleDateTime);
+          const isUpcoming = scheduleDate >= now;
+          console.log(
+            `Booking ${booking.id}: ${booking.scheduleDateTime} -> ${
+              isUpcoming ? "UPCOMING" : "PAST"
+            }`
+          );
+          return isUpcoming;
+        }
+        // Fallback: try parsing the formatted date string
         const bookingDate = new Date(booking.departDate);
-        return bookingDate >= now;
+        const isUpcoming = bookingDate >= now;
+        console.log(
+          `Booking ${booking.id} (fallback): ${booking.departDate} -> ${
+            isUpcoming ? "UPCOMING" : "PAST"
+          }`
+        );
+        return isUpcoming;
       })
       .sort((a, b) => {
-        // Sort upcoming bookings by date ascending (soonest first)
-        const dateA = new Date(a.departDate);
-        const dateB = new Date(b.departDate);
+        // Sort upcoming bookings by datetime ascending (soonest first)
+        const dateA = new Date(a.scheduleDateTime || a.departDate);
+        const dateB = new Date(b.scheduleDateTime || b.departDate);
         return dateA.getTime() - dateB.getTime();
       });
 
     const past = bookings
       .filter((booking) => {
+        // Use the raw schedule datetime for accurate comparison
+        if (booking.scheduleDateTime) {
+          const scheduleDate = new Date(booking.scheduleDateTime);
+          return scheduleDate < now;
+        }
+        // Fallback: try parsing the formatted date string
         const bookingDate = new Date(booking.departDate);
         return bookingDate < now;
       })
       .sort((a, b) => {
-        // Sort past bookings by date descending (most recent first)
-        const dateA = new Date(a.departDate);
-        const dateB = new Date(b.departDate);
+        // Sort past bookings by datetime descending (most recent first)
+        const dateA = new Date(a.scheduleDateTime || a.departDate);
+        const dateB = new Date(b.scheduleDateTime || b.departDate);
         return dateB.getTime() - dateA.getTime();
       });
+
+    console.log("Upcoming bookings:", upcoming.length);
+    console.log("Past bookings:", past.length);
 
     return { upcomingBookings: upcoming, pastBookings: past };
   }, [bookings]);

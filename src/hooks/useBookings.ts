@@ -10,6 +10,7 @@ export interface BookingCardInfo {
     departDate: string;
     bookingNo: string;
     vehicleNo: string;
+    scheduleDateTime?: string; // Add optional raw datetime
 }
 
 export interface UseBookingsResult {
@@ -127,6 +128,7 @@ export function useBookings(
 
     const transformBooking = (booking: Booking): BookingCardInfo => {
         const { boardTime, arrivalTime } = calculateUserTimes(booking);
+        const scheduleDate = new Date(booking.vehicleRouteSchedule.scheduleTime);
 
         return {
             id: booking.bookingId,
@@ -134,9 +136,7 @@ export function useBookings(
             destination: booking.destinationStop.stopName,
             departTime: boardTime,
             arriveTime: arrivalTime,
-            departDate: new Date(
-                booking.vehicleRouteSchedule.scheduleTime
-            ).toLocaleDateString("th-TH", {
+            departDate: scheduleDate.toLocaleDateString("en-US", {
                 weekday: "short",
                 day: "2-digit",
                 month: "short",
@@ -144,6 +144,7 @@ export function useBookings(
             }),
             bookingNo: booking.bookingId.toString().padStart(20, "0"),
             vehicleNo: booking.vehicleRouteSchedule.vehicle.licensePlate,
+            scheduleDateTime: booking.vehicleRouteSchedule.scheduleTime, // Add raw datetime for comparison
         };
     };
 
