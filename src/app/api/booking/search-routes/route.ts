@@ -159,7 +159,17 @@ export async function GET(request: NextRequest) {
             validRouteIds,
         });
 
+        // Calculate minimum booking time (now + 20 minutes)
+        const now = new Date();
+        const minimumBookingTime = new Date(now.getTime() + 20 * 60000); // Add 20 minutes in milliseconds
+
+        console.log('Time filters:', {
+            currentTime: now.toISOString(),
+            minimumBookingTime: minimumBookingTime.toISOString(),
+        });
+
         // Find schedules for these routes on the selected date
+        // Filter out schedules that are less than 20 minutes from now
         // First, get all schedules that match the date using raw SQL
         const rawSchedules = await prisma.$queryRaw<Array<{
             vehicle_route_schedule_id: number;
@@ -174,6 +184,7 @@ export async function GET(request: NextRequest) {
             WHERE route_id = ANY(${validRouteIds})
             AND DATE(schedule_time) = ${dateOnly}::date
             AND status = 'UPCOMING'
+            AND schedule_time >= ${minimumBookingTime}
         `;
 
         console.log('Raw schedules found:', rawSchedules.length);
@@ -198,7 +209,7 @@ export async function GET(request: NextRequest) {
                             guests,
                         },
                     },
-                    message: "No routes found for the selected date",
+                    message: "No routes found for the selected date. Routes must be bookable at least 20 minutes before departure.",
                 },
                 { status: 200 }
             );

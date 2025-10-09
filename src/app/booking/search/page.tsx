@@ -337,8 +337,9 @@ function SearchPageContent() {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              No routes found for your search criteria. Please try different
-              dates or locations.
+              No routes found for your search criteria. Routes must be bookable
+              at least 20 minutes before departure. Please try different dates
+              or locations.
             </AlertDescription>
           </Alert>
         )}
