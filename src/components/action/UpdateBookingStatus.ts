@@ -1,12 +1,10 @@
 "use server";
 
-import { PrismaClient } from "@/generated/prisma";
-
-const prismaClient = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function UpdateBookingStatus(bookingId: number): Promise<boolean> {
   try {
-    await prismaClient.booking.update({
+    await prisma.booking.update({
       where: { bookingId: bookingId },
       data: { status: "COMPLETED" },
     });

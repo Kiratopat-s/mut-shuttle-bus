@@ -59,7 +59,7 @@ function SearchPageContent() {
       vehicle_type: route.vehicle.vehicleType.vehicleTypeName,
       vehicle_seat: route.vehicle.capacity,
       vehicle_route_start_time: new Date(route.startTime).toLocaleTimeString(
-        "en-US",
+        "th-TH",
         {
           hour: "2-digit",
           minute: "2-digit",
@@ -67,7 +67,7 @@ function SearchPageContent() {
         }
       ),
       vehicle_route_end_time: new Date(route.endTime).toLocaleTimeString(
-        "en-US",
+        "th-TH",
         {
           hour: "2-digit",
           minute: "2-digit",
