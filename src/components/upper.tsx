@@ -8,6 +8,7 @@ import SearchModal from "./modals/searchModal";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserInformation } from "@/provider/UserProvider";
+import { Badge } from "./ui/badge";
 
 interface UpperProps {
   user: UserInformation;
@@ -45,6 +46,9 @@ UpperProps) {
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
             <p>Hi {user.firstName}</p>
+            <Badge variant={"outline"} className="text-xs">
+              {user.role.roleName}
+            </Badge>
           </div>
         </Link>
         <div className="flex gap-2">
