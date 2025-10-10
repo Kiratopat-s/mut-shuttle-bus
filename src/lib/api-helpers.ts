@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
+import { type Permission } from "@/lib/permissions";
 
 export interface ApiResponse<T = unknown> {
     success: boolean;
@@ -104,6 +106,242 @@ export async function requireAdminAuth(): Promise<DecodedUser | NextResponse> {
     if (user.role.roleName !== "admin") {
         return NextResponse.json(
             { error: "Forbidden - Admin access required" },
+            { status: 403 }
+        );
+    }
+
+    return user;
+}
+
+/**
+ * Get user with full permissions from database
+ */
+export async function getUserWithPermissions(userId: number) {
+    return await prisma.user.findUnique({
+        where: { userId },
+        include: {
+            role: {
+                include: {
+                    RolePermission: {
+                        include: {
+                            permission: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+}
+
+/**
+ * Check if user has specific permission
+ */
+export async function userHasPermission(
+    userId: number,
+    requiredPermission: Permission
+): Promise<boolean> {
+    const user = await getUserWithPermissions(userId);
+
+    if (!user) {
+        return false;
+    }
+
+    const userPermissions = user.role.RolePermission.map(
+        (rp) => rp.permission.permissionName
+    );
+
+    return userPermissions.includes(requiredPermission);
+}
+
+/**
+ * Check if user has any of the specified permissions
+ */
+export async function userHasAnyPermission(
+    userId: number,
+    requiredPermissions: Permission[]
+): Promise<boolean> {
+    const user = await getUserWithPermissions(userId);
+
+    if (!user) {
+        return false;
+    }
+
+    const userPermissions = user.role.RolePermission.map(
+        (rp) => rp.permission.permissionName
+    );
+
+    return requiredPermissions.some((permission) =>
+        userPermissions.includes(permission)
+    );
+}
+
+/**
+ * Check if user has all of the specified permissions
+ */
+export async function userHasAllPermissions(
+    userId: number,
+    requiredPermissions: Permission[]
+): Promise<boolean> {
+    const user = await getUserWithPermissions(userId);
+
+    if (!user) {
+        return false;
+    }
+
+    const userPermissions = user.role.RolePermission.map(
+        (rp) => rp.permission.permissionName
+    );
+
+    return requiredPermissions.every((permission) =>
+        userPermissions.includes(permission)
+    );
+}
+
+/**
+ * Require authentication (any logged-in user)
+ */
+export async function requireAuth(): Promise<DecodedUser | NextResponse> {
+    const user = await getAuthUser();
+
+    if (!user) {
+        return NextResponse.json(
+            { error: "Unauthorized - Authentication required" },
+            { status: 401 }
+        );
+    }
+
+    return user;
+}
+
+/**
+ * Require specific role
+ */
+export async function requireRole(
+    requiredRole: string | string[]
+): Promise<DecodedUser | NextResponse> {
+    const user = await getAuthUser();
+
+    if (!user) {
+        return NextResponse.json(
+            { error: "Unauthorized - Authentication required" },
+            { status: 401 }
+        );
+    }
+
+    const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+
+    if (!roles.includes(user.role.roleName)) {
+        return NextResponse.json(
+            {
+                error: `Forbidden - Required role: ${roles.join(" or ")}`,
+                userRole: user.role.roleName
+            },
+            { status: 403 }
+        );
+    }
+
+    return user;
+}
+
+/**
+ * Require specific permission (checks ANY of the provided permissions)
+ */
+export async function requirePermission(
+    requiredPermissions: Permission | Permission[]
+): Promise<DecodedUser | NextResponse> {
+    const user = await getAuthUser();
+
+    if (!user) {
+        return NextResponse.json(
+            { error: "Unauthorized - Authentication required" },
+            { status: 401 }
+        );
+    }
+
+    const permissions = Array.isArray(requiredPermissions)
+        ? requiredPermissions
+        : [requiredPermissions];
+
+    const hasPermission = await userHasAnyPermission(user.userId, permissions);
+
+    if (!hasPermission) {
+        return NextResponse.json(
+            {
+                error: "Forbidden - Insufficient permissions",
+                requiredPermissions: permissions,
+                userRole: user.role.roleName
+            },
+            { status: 403 }
+        );
+    }
+
+    return user;
+}
+
+/**
+ * Require ALL specified permissions
+ */
+export async function requireAllPermissions(
+    requiredPermissions: Permission[]
+): Promise<DecodedUser | NextResponse> {
+    const user = await getAuthUser();
+
+    if (!user) {
+        return NextResponse.json(
+            { error: "Unauthorized - Authentication required" },
+            { status: 401 }
+        );
+    }
+
+    const hasAllPermissions = await userHasAllPermissions(
+        user.userId,
+        requiredPermissions
+    );
+
+    if (!hasAllPermissions) {
+        return NextResponse.json(
+            {
+                error: "Forbidden - Insufficient permissions",
+                requiredPermissions,
+                userRole: user.role.roleName
+            },
+            { status: 403 }
+        );
+    }
+
+    return user;
+}
+
+/**
+ * Combined role and permission check (user must have role OR any permission)
+ */
+export async function requireRoleOrPermission(
+    requiredRoles: string[],
+    requiredPermissions: Permission[]
+): Promise<DecodedUser | NextResponse> {
+    const user = await getAuthUser();
+
+    if (!user) {
+        return NextResponse.json(
+            { error: "Unauthorized - Authentication required" },
+            { status: 401 }
+        );
+    }
+
+    // Check if user has required role
+    const hasRole = requiredRoles.includes(user.role.roleName);
+
+    // Check if user has any required permission
+    const hasPermission = await userHasAnyPermission(user.userId, requiredPermissions);
+
+    if (!hasRole && !hasPermission) {
+        return NextResponse.json(
+            {
+                error: "Forbidden - Insufficient access",
+                requiredRoles,
+                requiredPermissions,
+                userRole: user.role.roleName
+            },
             { status: 403 }
         );
     }
