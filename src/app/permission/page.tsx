@@ -358,7 +358,7 @@ export default function PermissionPage() {
 
       {/* Save Button (Fixed at bottom when changes exist) */}
       {hasChanges && (
-        <div className="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border-2 border-gray-200 p-4">
+        <div className="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border-2 border-gray-200 p-4 z-200">
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-600">
               มีการเปลี่ยนแปลงที่ยังไม่ได้บันทึก
