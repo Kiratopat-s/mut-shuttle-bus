@@ -13,37 +13,41 @@ import {
 import Link from "next/link";
 import React from "react";
 import { useUserInformation } from "@/provider/UserProvider";
+import { PERMISSIONS } from "@/lib/permissions";
 
 interface MenuItem {
   name: string;
   icon: React.ReactNode;
   link: string;
-  requiredPermissions?: string[]; // If any of these permissions exist, show the menu
-  requireAllPermissions?: string[]; // All of these permissions must exist
+  requiredPermissions?: string[]; // If user has ANY of these permissions, show the menu
+  requireAllPermissions?: string[]; // User must have ALL of these permissions
   requireRole?: string[]; // Show only for specific roles
   onclick?(): void;
 }
 
 // Define all possible menu items with their permission requirements
 const ALL_MENU_ITEMS: MenuItem[] = [
-  // Booking related
+  // Booking related (for students and employees)
   {
     name: "Book a ride",
     icon: <TicketPlus />,
     link: "/booking",
-    requiredPermissions: ["create_booking"],
+    requiredPermissions: [PERMISSIONS.CREATE_BOOKING],
   },
   {
     name: "My bookings",
     icon: <WalletCards />,
     link: "/my-bookings",
-    requiredPermissions: ["create_booking", "cancel_booking"],
+    requiredPermissions: [
+      PERMISSIONS.CREATE_BOOKING,
+      PERMISSIONS.CANCEL_BOOKING,
+    ],
   },
   {
     name: "Check-in",
     icon: <TicketsPlane />,
     link: "/check-in",
-    requiredPermissions: ["create_booking"],
+    requiredPermissions: [PERMISSIONS.CREATE_BOOKING],
   },
 
   // Driver specific
@@ -51,21 +55,24 @@ const ALL_MENU_ITEMS: MenuItem[] = [
     name: "Driver System",
     icon: <MapPin />,
     link: "/driver/",
-    requiredPermissions: ["drive_vehicle", "update_vehicle_status"],
+    requiredPermissions: [
+      PERMISSIONS.DRIVE_VEHICLE,
+      PERMISSIONS.UPDATE_VEHICLE_STATUS,
+    ],
   },
 
-  // Admin/Management
+  // Admin/Management (show if user has ANY of these permissions)
   {
     name: "System management",
     icon: <BrickWallShield />,
     link: "/admin",
     requiredPermissions: [
-      "manage_users",
-      "manage_vehicles",
-      "manage_routes",
-      "manage_schedules",
-      "manage_bookings",
-      "manage_permissions",
+      PERMISSIONS.MANAGE_USERS,
+      PERMISSIONS.MANAGE_VEHICLES,
+      PERMISSIONS.MANAGE_ROUTES,
+      PERMISSIONS.MANAGE_SCHEDULES,
+      PERMISSIONS.MANAGE_BOOKINGS,
+      PERMISSIONS.MANAGE_PERMISSIONS,
     ],
   },
   {
@@ -73,16 +80,19 @@ const ALL_MENU_ITEMS: MenuItem[] = [
     icon: <Calendar />,
     link: "/schedule/management",
     requiredPermissions: [
-      "manage_schedules",
-      "manage_vehicles",
-      "manage_routes",
+      PERMISSIONS.MANAGE_SCHEDULES,
+      PERMISSIONS.MANAGE_VEHICLES,
+      PERMISSIONS.MANAGE_ROUTES,
     ],
   },
   {
     name: "Report",
     icon: <LayoutDashboard />,
     link: "/report",
-    requiredPermissions: ["view_reports", "manage_bookings"],
+    requiredPermissions: [
+      PERMISSIONS.VIEW_REPORTS,
+      PERMISSIONS.MANAGE_BOOKINGS,
+    ],
   },
 ];
 
@@ -138,11 +148,11 @@ function PermissionBasedMenu() {
   }
 
   // Check if user is a driver to show special header
-  const isDriver = hasAnyPermission(["drive_vehicle"]);
+  const isDriver = hasAnyPermission([PERMISSIONS.DRIVE_VEHICLE]);
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      {/* Driver specific header */}
+      {/* Driver specific header - only show if user has driver permissions */}
       {isDriver && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 text-blue-700">
@@ -167,23 +177,39 @@ function PermissionBasedMenu() {
           }`}
           onClick={menu.onclick}
         >
-          <div className={isDriver ? "text-blue-600" : ""}>{menu.icon}</div>
-          <p className="text-gray-700">{menu.name}</p>
+          <div className={isDriver ? "text-blue-600" : "text-gray-600"}>
+            {menu.icon}
+          </div>
+          <p className="text-gray-700 font-medium">{menu.name}</p>
         </Link>
       ))}
 
-      {/* Role and permission info (for debugging, can be removed in production) */}
+      {/* Debug info - only in development mode */}
       {process.env.NODE_ENV === "development" && (
-        <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-600">
-          <p className="font-semibold mb-1">Debug Info:</p>
-          <p>Role: {user.role.roleName}</p>
-          <p>
-            Permissions:{" "}
-            {user.role.RolePermission.map(
-              (rp) => rp.permission.permissionName
-            ).join(", ")}
-          </p>
-          <p>Visible Items: {visibleMenuItems.length}</p>
+        <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-600 border border-gray-300">
+          <p className="font-semibold mb-2 text-gray-800">🔍 Debug Info:</p>
+          <div className="space-y-1">
+            <p>
+              <span className="font-medium">Role:</span>{" "}
+              <span className="text-blue-600">{user.role.roleName}</span>
+            </p>
+            <p>
+              <span className="font-medium">Permissions:</span>{" "}
+              <span className="text-green-600">
+                {user.role.RolePermission.map(
+                  (rp) => rp.permission.permissionName
+                ).join(", ") || "None"}
+              </span>
+            </p>
+            <p>
+              <span className="font-medium">Visible Menu Items:</span>{" "}
+              <span className="text-purple-600">{visibleMenuItems.length}</span>
+            </p>
+            <p className="pt-1 mt-1 border-t border-gray-300">
+              <span className="font-medium">Menu Items:</span>{" "}
+              {visibleMenuItems.map((item) => item.name).join(", ")}
+            </p>
+          </div>
         </div>
       )}
     </div>
