@@ -1,10 +1,22 @@
 "use client";
 
-import { Employee, Role, User } from "@/generated/prisma";
+import {
+  Employee,
+  Permission,
+  Role,
+  RolePermission,
+  User,
+} from "@/generated/prisma";
 import { createContext, useContext, useEffect, useState } from "react";
 
+export type UserRole = Role & {
+  RolePermission: (RolePermission & {
+    permission: Permission;
+  })[];
+};
+
 export type UserInformation = Omit<User, "employeeId"> & {
-  role: Role;
+  role: UserRole;
   employee?: Employee | null;
 };
 
@@ -12,12 +24,16 @@ interface UserContext {
   user: UserInformation | null;
   isLoading: boolean;
   clearUser: () => void;
+  hasPermission: (permissionName: string) => boolean;
+  hasAnyPermission: (permissionNames: string[]) => boolean;
 }
 
 const UserContext = createContext<UserContext>({
   user: null,
   isLoading: true,
   clearUser: () => {},
+  hasPermission: () => false,
+  hasAnyPermission: () => false,
 });
 
 export const useUserInformation = () => useContext(UserContext);
@@ -59,8 +75,26 @@ export default function UserProvider({
 
   const clearUser = () => setUser(null);
 
+  const hasPermission = (permissionName: string): boolean => {
+    if (!user) return false;
+    return user.role.RolePermission.some(
+      (rp) => rp.permission.permissionName === permissionName
+    );
+  };
+
+  const hasAnyPermission = (permissionNames: string[]): boolean => {
+    if (!user) return false;
+    return permissionNames.some((permissionName) =>
+      user.role.RolePermission.some(
+        (rp) => rp.permission.permissionName === permissionName
+      )
+    );
+  };
+
   return (
-    <UserContext.Provider value={{ user, isLoading, clearUser }}>
+    <UserContext.Provider
+      value={{ user, isLoading, clearUser, hasPermission, hasAnyPermission }}
+    >
       {children}
     </UserContext.Provider>
   );

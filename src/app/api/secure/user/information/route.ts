@@ -9,7 +9,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
   const user = await prisma.user.findUnique({
     where: { userId: Number(userId) },
-    include: { role: true, employee: true },
+    include: {
+      role: {
+        include: {
+          RolePermission: {
+            include: {
+              permission: true
+            }
+          }
+        }
+      },
+      employee: true
+    },
     omit: { password: true },
   });
 

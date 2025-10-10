@@ -2,14 +2,13 @@
 
 import { Suspense, useState } from "react";
 import { CarouselCheckIn } from "@/components/carouselCheckIn";
-import HomeMainMenu from "@/components/homeMainMenu";
-import HomeMainMenuDriver from "@/components/homeMainMenuDriver";
+import PermissionBasedMenu from "@/components/PermissionBasedMenu";
 import QrPassanger from "@/components/modals/qrPassangerModal";
 import { useUserInformation } from "@/provider/UserProvider";
 import { BookingCardInfo } from "@/hooks/useBookings";
 
 function HomeContent() {
-  const { user } = useUserInformation();
+  const { hasAnyPermission } = useUserInformation();
   const [selectedBooking, setSelectedBooking] =
     useState<BookingCardInfo | null>(null);
   const [qrModalOpen, setQrModalOpen] = useState(false);
@@ -24,7 +23,7 @@ function HomeContent() {
     setSelectedBooking(null);
   };
 
-  const isDriver = user?.role.roleName === "driver";
+  const canMakeBookings = hasAnyPermission(["create_booking"]);
 
   return (
     <div className="flex min-h-screen flex-col items-center w-full p-2 gap-12">
@@ -34,14 +33,15 @@ function HomeContent() {
         bookingData={selectedBooking}
       />
 
-      {/* แสดง CarouselCheckIn เฉพาะผู้ใช้ที่ไม่ใช่ driver */}
-      {!isDriver && (
+      {/* แสดง CarouselCheckIn เฉพาะผู้ใช้ที่มีสิทธิ์จองรถ */}
+      {canMakeBookings && (
         <div className="p-2 bg-red-900 rounded-xl w-full max-w-sm">
           <CarouselCheckIn onOpenQrModal={handleOpenQrModal} />
         </div>
       )}
-      {/* แสดงเมนูตาม role */}
-      {isDriver ? <HomeMainMenuDriver /> : <HomeMainMenu />}
+
+      {/* แสดงเมนูตาม permissions */}
+      <PermissionBasedMenu />
     </div>
   );
 }
