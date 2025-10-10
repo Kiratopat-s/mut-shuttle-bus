@@ -1,7 +1,7 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
     createApiResponse,
-    getAuthUser,
+    requirePermission,
     handleApiError,
 } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
@@ -9,22 +9,16 @@ import { Base64 } from "js-base64";
 
 /**
  * GET /api/admin/users/[userId]
- * Get a specific user (admin only)
+ * Get a specific user (requires manage_users permission)
  */
 export async function GET(
     req: NextRequest,
     { params }: { params: Promise<{ userId: string }> }
 ) {
     try {
-        const user = await getAuthUser();
-        if (!user || user.role.roleName !== "admin") {
-            return createApiResponse(
-                false,
-                403,
-                undefined,
-                undefined,
-                "Forbidden. Admin access required."
-            );
+        const authResult = await requirePermission(["manage_users"]);
+        if (authResult instanceof NextResponse) {
+            return authResult;
         }
 
         const { userId } = await params;
@@ -79,23 +73,18 @@ export async function GET(
 
 /**
  * PATCH /api/admin/users/[userId]
- * Update a user (admin only)
+ * Update a user (requires manage_users permission)
  */
 export async function PATCH(
     req: NextRequest,
     { params }: { params: Promise<{ userId: string }> }
 ) {
     try {
-        const user = await getAuthUser();
-        if (!user || user.role.roleName !== "admin") {
-            return createApiResponse(
-                false,
-                403,
-                undefined,
-                undefined,
-                "Forbidden. Admin access required."
-            );
+        const authResult = await requirePermission(["manage_users"]);
+        if (authResult instanceof NextResponse) {
+            return authResult;
         }
+        const authenticatedUser = authResult;
 
         const { userId } = await params;
         const body = await req.json();
@@ -196,23 +185,18 @@ export async function PATCH(
 
 /**
  * DELETE /api/admin/users/[userId]
- * Delete a user (admin only)
+ * Delete a user (requires manage_users permission)
  */
 export async function DELETE(
     req: NextRequest,
     { params }: { params: Promise<{ userId: string }> }
 ) {
     try {
-        const user = await getAuthUser();
-        if (!user || user.role.roleName !== "admin") {
-            return createApiResponse(
-                false,
-                403,
-                undefined,
-                undefined,
-                "Forbidden. Admin access required."
-            );
+        const authResult = await requirePermission(["manage_users"]);
+        if (authResult instanceof NextResponse) {
+            return authResult;
         }
+        const authenticatedUser = authResult;
 
         const { userId } = await params;
 
@@ -232,7 +216,7 @@ export async function DELETE(
         }
 
         // Prevent deleting yourself
-        if (existingUser.userId === user.userId) {
+        if (existingUser.userId === authenticatedUser.userId) {
             return createApiResponse(
                 false,
                 400,

@@ -1,14 +1,17 @@
-import { createApiResponse, handleApiError } from "@/lib/api-helpers";
+import { createApiResponse, handleApiError, requirePermission } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
-import { requireAdminAuth } from "@/lib/api-helpers";
+import { NextResponse } from "next/server";
 
 /**
  * GET /api/admin/routes
- * Get all routes (admin only)
+ * Get all routes (requires manage_routes or manage_schedules permission)
  */
 export async function GET() {
     try {
-        await requireAdminAuth();
+        const authResult = await requirePermission(["manage_routes", "manage_schedules"]);
+        if (authResult instanceof NextResponse) {
+            return authResult;
+        }
 
         const routes = await prisma.route.findMany({
             orderBy: {

@@ -1,7 +1,7 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
     createApiResponse,
-    getAuthUser,
+    requirePermission,
     handleApiError,
 } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
@@ -9,19 +9,13 @@ import { Base64 } from "js-base64";
 
 /**
  * GET /api/admin/users
- * Get all users (admin only)
+ * Get all users (requires manage_users permission)
  */
 export async function GET(req: NextRequest) {
     try {
-        const user = await getAuthUser();
-        if (!user || user.role.roleName !== "admin") {
-            return createApiResponse(
-                false,
-                403,
-                undefined,
-                undefined,
-                "Forbidden. Admin access required."
-            );
+        const authResult = await requirePermission(["manage_users"]);
+        if (authResult instanceof NextResponse) {
+            return authResult;
         }
 
         const { searchParams } = new URL(req.url);
@@ -85,19 +79,13 @@ export async function GET(req: NextRequest) {
 
 /**
  * POST /api/admin/users
- * Create a new user (admin only)
+ * Create a new user (requires manage_users permission)
  */
 export async function POST(req: NextRequest) {
     try {
-        const user = await getAuthUser();
-        if (!user || user.role.roleName !== "admin") {
-            return createApiResponse(
-                false,
-                403,
-                undefined,
-                undefined,
-                "Forbidden. Admin access required."
-            );
+        const authResult = await requirePermission(["manage_users"]);
+        if (authResult instanceof NextResponse) {
+            return authResult;
         }
 
         const body = await req.json();

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminAuth } from "@/lib/api-helpers";
+import { requirePermission } from "@/lib/api-helpers";
 
 // GET /api/admin/schedules - Get all schedules with filters
 export async function GET(req: NextRequest) {
     try {
-        const authResult = await requireAdminAuth();
+        const authResult = await requirePermission(["manage_schedules", "manage_vehicles", "manage_routes"]);
         if (authResult instanceof NextResponse) {
             return authResult;
         }
@@ -142,7 +142,7 @@ export async function GET(req: NextRequest) {
 // POST /api/admin/schedules - Create new schedule
 export async function POST(req: NextRequest) {
     try {
-        const authResult = await requireAdminAuth();
+        const authResult = await requirePermission(["manage_schedules"]);
         if (authResult instanceof NextResponse) {
             return authResult;
         }

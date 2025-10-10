@@ -1,8 +1,9 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { BookingStatus } from "@/generated/prisma";
 import {
   createApiResponse,
-  getAuthUser,
+  requireAuth,
+  userHasPermission,
   handleApiError,
 } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
@@ -17,21 +18,16 @@ export interface UpdateBookingRequest {
 
 /**
  * PATCH /api/booking/edit-by-booking-id
- * Update an existing booking
+ * Update an existing booking (user must own the booking or have manage_bookings permission)
  */
 export async function PATCH(req: NextRequest) {
   try {
     // Check authentication
-    const user = await getAuthUser();
-    if (!user) {
-      return createApiResponse(
-        false,
-        401,
-        undefined,
-        undefined,
-        "Unauthorized. Please login first."
-      );
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     // Parse request body
     const body: UpdateBookingRequest = await req.json();
@@ -65,9 +61,11 @@ export async function PATCH(req: NextRequest) {
     }
 
     // Check if user has permission to edit this booking
+    const canManageAll = await userHasPermission(user.userId, "manage_bookings");
+
     if (
       existingBooking.userId !== user.userId &&
-      user.role.roleName !== "admin"
+      !canManageAll
     ) {
       return createApiResponse(
         false,
@@ -103,8 +101,8 @@ export async function PATCH(req: NextRequest) {
         body.status === BookingStatus.CANCELLED
       ) {
         updateData.status = body.status;
-      } else if (user.role.roleName === "admin") {
-        // Admin can change to any status
+      } else if (canManageAll) {
+        // Users with manage_bookings permission can change to any status
         updateData.status = body.status;
       } else {
         return createApiResponse(
@@ -265,21 +263,16 @@ export async function PATCH(req: NextRequest) {
 
 /**
  * DELETE /api/booking/edit-by-booking-id?bookingId=<id>
- * Cancel a booking (soft delete by setting status to CANCELLED)
+ * Cancel a booking (user must own the booking or have manage_bookings/cancel_booking permission)
  */
 export async function DELETE(req: NextRequest) {
   try {
     // Check authentication
-    const user = await getAuthUser();
-    if (!user) {
-      return createApiResponse(
-        false,
-        401,
-        undefined,
-        undefined,
-        "Unauthorized. Please login first."
-      );
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const user = authResult;
 
     // Get query parameters
     const { searchParams } = new URL(req.url);
@@ -313,9 +306,13 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Check if user has permission to delete this booking
+    const canManageAll = await userHasPermission(user.userId, "manage_bookings");
+    const canCancel = await userHasPermission(user.userId, "cancel_booking");
+
     if (
       existingBooking.userId !== user.userId &&
-      user.role.roleName !== "admin"
+      !canManageAll &&
+      !canCancel
     ) {
       return createApiResponse(
         false,

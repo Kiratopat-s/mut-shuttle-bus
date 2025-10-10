@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminAuth } from "@/lib/api-helpers";
+import { requirePermission } from "@/lib/api-helpers";
 
-// PUT /api/admin/permissions/roles - Update role permissions
+// PUT /api/admin/permissions/roles - Update role permissions (requires manage_permissions)
 export async function PUT(request: Request) {
     try {
-        const authResult = await requireAdminAuth();
+        const authResult = await requirePermission(["manage_permissions"]);
         if (authResult instanceof NextResponse) {
             return authResult;
         }

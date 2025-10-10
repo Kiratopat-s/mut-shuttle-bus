@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminAuth } from "@/lib/api-helpers";
+import { requirePermission } from "@/lib/api-helpers";
 
-// GET /api/admin/departments - Get all departments
+// GET /api/admin/departments - Get all departments (requires manage_users permission)
 export async function GET() {
     try {
-        const authResult = await requireAdminAuth();
+        const authResult = await requirePermission(["manage_users"]);
         if (authResult instanceof NextResponse) {
             return authResult;
         }
@@ -26,10 +26,10 @@ export async function GET() {
     }
 }
 
-// POST /api/admin/departments - Create a new department
+// POST /api/admin/departments - Create a new department (requires manage_users permission)
 export async function POST(request: NextRequest) {
     try {
-        const authResult = await requireAdminAuth();
+        const authResult = await requirePermission(["manage_users"]);
         if (authResult instanceof NextResponse) {
             return authResult;
         }

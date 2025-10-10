@@ -1,25 +1,20 @@
 import {
     createApiResponse,
-    getAuthUser,
+    requirePermission,
     handleApiError,
 } from "@/lib/api-helpers";
 import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 /**
  * GET /api/admin/roles
- * Get all roles (admin only)
+ * Get all roles (requires manage_users or manage_permissions permission)
  */
 export async function GET() {
     try {
-        const user = await getAuthUser();
-        if (!user || user.role.roleName !== "admin") {
-            return createApiResponse(
-                false,
-                403,
-                undefined,
-                undefined,
-                "Forbidden. Admin access required."
-            );
+        const authResult = await requirePermission(["manage_users", "manage_permissions"]);
+        if (authResult instanceof NextResponse) {
+            return authResult;
         }
 
         const roles = await prisma.role.findMany({

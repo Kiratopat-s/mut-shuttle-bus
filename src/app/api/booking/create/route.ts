@@ -1,8 +1,8 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { BookingStatus } from "@/generated/prisma";
 import {
     createApiResponse,
-    getAuthUser,
+    requirePermission,
     validateRequiredFields,
     handleApiError,
 } from "@/lib/api-helpers";
@@ -16,21 +16,16 @@ export interface CreateBookingRequest {
 
 /**
  * POST /api/booking/create
- * Create a new booking
+ * Create a new booking (requires create_booking permission)
  */
 export async function POST(req: NextRequest) {
     try {
-        // Check authentication
-        const user = await getAuthUser();
-        if (!user) {
-            return createApiResponse(
-                false,
-                401,
-                undefined,
-                undefined,
-                "Unauthorized. Please login first."
-            );
+        // Check authentication and permission
+        const authResult = await requirePermission(["create_booking"]);
+        if (authResult instanceof NextResponse) {
+            return authResult;
         }
+        const user = authResult;
 
         // Parse request body
         const body: CreateBookingRequest = await req.json();

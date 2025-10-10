@@ -1,25 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
+import { requirePermission } from "@/lib/api-helpers";
 
 const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
   try {
-    // Get user ID from middleware
-    const userId = req.headers.get("X-User-Id");
-    if (!userId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // Check for drive_vehicle permission
+    const authResult = await requirePermission(["drive_vehicle"]);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
-
-    // Get user with role information
-    const user = await prisma.user.findUnique({
-      where: { userId: parseInt(userId) },
-      include: { role: true }
-    });
-
-    if (!user || user.role.roleName !== "driver") {
-      return NextResponse.json({ message: "Access denied. Driver role required." }, { status: 403 });
-    }
+    const user = authResult;
 
     // Get query parameters
     const { searchParams } = new URL(req.url);
@@ -159,21 +151,12 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    // Get user ID from middleware
-    const userId = req.headers.get("X-User-Id");
-    if (!userId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    // Check for update_vehicle_status permission
+    const authResult = await requirePermission(["update_vehicle_status"]);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
-
-    // Get user with role information
-    const user = await prisma.user.findUnique({
-      where: { userId: parseInt(userId) },
-      include: { role: true }
-    });
-
-    if (!user || user.role.roleName !== "driver") {
-      return NextResponse.json({ message: "Access denied. Driver role required." }, { status: 403 });
-    }
+    const user = authResult;
 
     const body = await req.json();
     const { scheduleId, status } = body;
