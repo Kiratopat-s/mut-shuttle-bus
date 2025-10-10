@@ -84,7 +84,6 @@ export async function PATCH(
         if (authResult instanceof NextResponse) {
             return authResult;
         }
-        const authenticatedUser = authResult;
 
         const { userId } = await params;
         const body = await req.json();
