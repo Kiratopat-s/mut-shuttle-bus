@@ -4,6 +4,7 @@ import "@/app/globals.css";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import AppShell from "@/components/AppShell";
 import UserProvider from "@/provider/UserProvider";
+import { Toaster } from "sonner";
 
 const kanit = Kanit({
   variable: "--font-kanit",
@@ -32,6 +33,7 @@ export default function RootLayout({
             <AppShell>{children}</AppShell>
           </UserProvider>
         </NuqsAdapter>
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
         // Map to frontend format
         const formattedUsers = users.map((u) => ({
             userId: u.userId,
+            name: `${u.firstName} ${u.lastName}`,
             firstName: u.firstName,
             lastName: u.lastName,
             email: u.email,

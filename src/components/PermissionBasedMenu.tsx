@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   MapPin,
   Bus,
+  Calendar,
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -68,6 +69,16 @@ const ALL_MENU_ITEMS: MenuItem[] = [
       "manage_roles",
       "manage_employees",
       "manage_permissions",
+    ],
+  },
+  {
+    name: "Schedule Management",
+    icon: <Calendar />,
+    link: "/schedule/management",
+    requiredPermissions: [
+      "manage_vehicle_routes",
+      "manage_vehicle",
+      "manage_routes",
     ],
   },
   {
